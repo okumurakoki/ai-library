@@ -33,22 +33,41 @@ const PricingPlan: React.FC = () => {
       color: '#000',
     },
     {
-      name: 'プレミアムプラン',
+      name: 'スタンダードプラン',
       price: '¥1,500',
+      period: '/ 月',
+      description: 'もっと活用したい方に',
+      features: [
+        'すべてのプロンプト見放題 (無制限)',
+        'プロンプトコピー無制限',
+        'お気に入り保存 (100個まで)',
+        'カスタムプロンプト作成 (50個まで)',
+        'エクスポート/インポート機能',
+        'AIニュース・記事の閲覧',
+        '統計機能',
+        '毎月新規プロンプト追加',
+      ],
+      recommended: true,
+      buttonText: '今すぐ登録',
+      color: '#000',
+    },
+    {
+      name: 'プレミアムプラン',
+      price: '¥3,000',
       period: '/ 月',
       description: 'すべての機能を使いこなす',
       features: [
         'すべてのプロンプト見放題 (無制限)',
         'プロンプトコピー無制限',
-        'お気に入り保存無制限',
-        'カスタムプロンプト作成無制限',
+        'お気に入り保存 (500個まで)',
+        'カスタムプロンプト作成 (150個まで)',
         'フォルダ管理機能',
         'AIニュース・記事の閲覧',
         '統計機能',
         '優先サポート',
         '毎月新規プロンプト追加',
       ],
-      recommended: true,
+      recommended: false,
       buttonText: '今すぐアップグレード',
       color: '#000',
     },
@@ -70,11 +89,9 @@ const PricingPlan: React.FC = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-          gap: 4,
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          gap: 3,
           mb: 8,
-          maxWidth: 900,
-          mx: 'auto',
         }}
       >
         {plans.map((plan) => (
@@ -189,19 +206,19 @@ const PricingPlan: React.FC = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {[
-            { feature: 'プロンプト閲覧', free: '20個', premium: '無制限' },
-            { feature: 'プロンプトコピー', free: '無制限', premium: '無制限' },
-            { feature: 'お気に入り保存', free: '50個', premium: '無制限' },
-            { feature: 'カスタムプロンプト作成', free: '10個', premium: '無制限' },
-            { feature: 'フォルダ管理', free: '不可', premium: '◯' },
-            { feature: 'AIニュース・記事', free: '不可', premium: '◯' },
-            { feature: '統計機能', free: '不可', premium: '◯' },
+            { feature: 'プロンプト閲覧', free: '20個', standard: '無制限', premium: '無制限' },
+            { feature: 'プロンプトコピー', free: '無制限', standard: '無制限', premium: '無制限' },
+            { feature: 'お気に入り保存', free: '50個', standard: '100個', premium: '500個' },
+            { feature: 'カスタムプロンプト作成', free: '10個', standard: '50個', premium: '150個' },
+            { feature: 'フォルダ管理', free: '不可', standard: '不可', premium: '◯' },
+            { feature: 'AIニュース・記事', free: '不可', standard: '◯', premium: '◯' },
+            { feature: '統計機能', free: '不可', standard: '◯', premium: '◯' },
           ].map((row, index) => (
             <Box
               key={index}
               sx={{
                 display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr',
+                gridTemplateColumns: '2fr 1fr 1fr 1fr',
                 gap: 2,
                 p: 2,
                 backgroundColor: '#fff',
@@ -210,7 +227,8 @@ const PricingPlan: React.FC = () => {
             >
               <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{row.feature}</Typography>
               <Typography sx={{ textAlign: 'center', fontSize: '0.85rem' }}>{row.free}</Typography>
-              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 600 }}>{row.premium}</Typography>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 600 }}>{row.standard}</Typography>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 700 }}>{row.premium}</Typography>
             </Box>
           ))}
         </Box>

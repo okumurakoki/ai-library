@@ -1,6 +1,6 @@
 // ユーザー権限管理
 
-export type UserRole = 'guest' | 'free' | 'premium' | 'admin';
+export type UserRole = 'guest' | 'free' | 'standard' | 'premium' | 'admin';
 
 export interface UserPermissions {
   canViewAllPrompts: boolean;
@@ -21,6 +21,7 @@ export const getUserRole = (user: any): UserRole => {
   if (!user) return 'guest';
   if (user.publicMetadata?.isAdmin === true) return 'admin';
   if (user.publicMetadata?.plan === 'premium') return 'premium';
+  if (user.publicMetadata?.plan === 'standard') return 'standard';
   return 'free';
 };
 
@@ -55,8 +56,24 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canExportImport: true,
         canUseFolders: true,
         maxVisiblePrompts: null,
-        maxCustomPrompts: null,
-        maxFavorites: null,
+        maxCustomPrompts: 150,
+        maxFavorites: 500,
+        isAdmin: false,
+      };
+
+    case 'standard':
+      return {
+        canViewAllPrompts: true,
+        canCopyPrompts: true,
+        canViewArticles: true,
+        canViewStatistics: true,
+        canCreateCustomPrompts: true,
+        canSaveFavorites: true,
+        canExportImport: true,
+        canUseFolders: false,
+        maxVisiblePrompts: null,
+        maxCustomPrompts: 50,
+        maxFavorites: 100,
         isAdmin: false,
       };
 
