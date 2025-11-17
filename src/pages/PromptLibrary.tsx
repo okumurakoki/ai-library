@@ -264,14 +264,20 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
           プロンプト辞典
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {(selectedPage === 'home' || selectedPage === 'custom' || selectedPage === 'favorites') && (
+          {(selectedPage === 'home' || selectedPage === 'custom' || selectedPage === 'favorites') && permissions.canCreateCustomPrompts && (
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
+                // 無料ユーザーの場合、上限チェック
+                if (permissions.maxCustomPrompts !== null && customPrompts.length >= permissions.maxCustomPrompts) {
+                  alert(`カスタムプロンプトは${permissions.maxCustomPrompts}個までです。プレミアムプランにアップグレードすると無制限に作成できます。`);
+                  return;
+                }
                 setEditingPrompt(null);
                 setCustomPromptDialogOpen(true);
               }}
+              disabled={permissions.maxCustomPrompts !== null && customPrompts.length >= permissions.maxCustomPrompts}
               sx={{
                 borderRadius: 0,
                 backgroundColor: '#000',
@@ -288,24 +294,26 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               プロンプトを作成
             </Button>
           )}
-          <Button
-            variant="outlined"
-            startIcon={<ImportExportIcon />}
-            onClick={() => setExportImportDialogOpen(true)}
-            sx={{
-              borderRadius: 0,
-              borderColor: '#000',
-              color: '#000',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              '&:hover': {
+          {permissions.canExportImport && (
+            <Button
+              variant="outlined"
+              startIcon={<ImportExportIcon />}
+              onClick={() => setExportImportDialogOpen(true)}
+              sx={{
+                borderRadius: 0,
                 borderColor: '#000',
-                backgroundColor: '#f5f5f5',
-              },
-            }}
-          >
-            エクスポート/インポート
-          </Button>
+                color: '#000',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                '&:hover': {
+                  borderColor: '#000',
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
+              エクスポート/インポート
+            </Button>
+          )}
           <Chip
             label={`${filteredPrompts.length}件のプロンプト`}
             sx={{

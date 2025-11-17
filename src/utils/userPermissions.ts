@@ -9,7 +9,10 @@ export interface UserPermissions {
   canViewStatistics: boolean;
   canCreateCustomPrompts: boolean;
   canSaveFavorites: boolean;
+  canExportImport: boolean;
   maxVisiblePrompts: number | null; // null = 無制限
+  maxCustomPrompts: number | null; // null = 無制限
+  maxFavorites: number | null; // null = 無制限
   isAdmin: boolean;
 }
 
@@ -32,7 +35,10 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canViewStatistics: true,
         canCreateCustomPrompts: true,
         canSaveFavorites: true,
+        canExportImport: true,
         maxVisiblePrompts: null,
+        maxCustomPrompts: null,
+        maxFavorites: null,
         isAdmin: true,
       };
 
@@ -44,7 +50,10 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canViewStatistics: true,
         canCreateCustomPrompts: true,
         canSaveFavorites: true,
+        canExportImport: true,
         maxVisiblePrompts: null,
+        maxCustomPrompts: null,
+        maxFavorites: null,
         isAdmin: false,
       };
 
@@ -54,9 +63,12 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCopyPrompts: true,
         canViewArticles: false,
         canViewStatistics: false,
-        canCreateCustomPrompts: false,
+        canCreateCustomPrompts: true,
         canSaveFavorites: true,
+        canExportImport: true,
         maxVisiblePrompts: 20,
+        maxCustomPrompts: 10,
+        maxFavorites: 50,
         isAdmin: false,
       };
 
@@ -68,7 +80,10 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canViewStatistics: false,
         canCreateCustomPrompts: false,
         canSaveFavorites: false,
+        canExportImport: false,
         maxVisiblePrompts: 20,
+        maxCustomPrompts: 0,
+        maxFavorites: 0,
         isAdmin: false,
       };
 
@@ -80,7 +95,10 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canViewStatistics: false,
         canCreateCustomPrompts: false,
         canSaveFavorites: false,
+        canExportImport: false,
         maxVisiblePrompts: 20,
+        maxCustomPrompts: 0,
+        maxFavorites: 0,
         isAdmin: false,
       };
   }

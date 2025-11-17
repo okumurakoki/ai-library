@@ -82,7 +82,7 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites, toggleFavorite: originalToggleFavorite } = useFavorites();
   const { recordPromptUse } = usePromptHistory();
   const [favoriteFolders, setFavoriteFolders] = useState<FavoriteFolder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -156,6 +156,25 @@ function App() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
+  };
+
+  // お気に入りのトグル（権限チェック付き）
+  const toggleFavorite = (promptId: string) => {
+    // 権限チェック
+    if (!permissions.canSaveFavorites) {
+      alert('お気に入りに保存するにはログインが必要です。');
+      return;
+    }
+
+    // 追加する場合は上限チェック
+    if (!favorites.includes(promptId)) {
+      if (permissions.maxFavorites !== null && favorites.length >= permissions.maxFavorites) {
+        alert(`お気に入りは${permissions.maxFavorites}個までです。プレミアムプランにアップグレードすると無制限に保存できます。`);
+        return;
+      }
+    }
+
+    originalToggleFavorite(promptId);
   };
 
   // フォルダ管理関数

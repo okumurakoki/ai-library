@@ -170,6 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               '&:hover': {
                 backgroundColor: '#f5f5f5',
               },
+              opacity: permissions.canSaveFavorites ? 1 : 0.5,
             }}
           >
             <ListItemIcon>
@@ -177,9 +178,20 @@ const Sidebar: React.FC<SidebarProps> = ({
             </ListItemIcon>
             <ListItemText
               primary="保存したプロンプト"
-              secondary={favoriteCount > 0 ? `${favoriteCount}件` : undefined}
+              secondary={
+                !permissions.canSaveFavorites
+                  ? 'ログインが必要'
+                  : favoriteCount > 0
+                  ? permissions.maxFavorites !== null
+                    ? `${favoriteCount} / ${permissions.maxFavorites}件`
+                    : `${favoriteCount}件`
+                  : undefined
+              }
               secondaryTypographyProps={{
-                sx: { fontSize: '0.75rem', color: '#666' }
+                sx: {
+                  fontSize: '0.75rem',
+                  color: !permissions.canSaveFavorites ? '#f44336' : '#666'
+                }
               }}
             />
           </ListItemButton>
@@ -201,7 +213,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               '&:hover': {
                 backgroundColor: '#f5f5f5',
               },
-              opacity: permissions.canCreateCustomPrompts ? 1 : 0.5,
             }}
           >
             <ListItemIcon>
@@ -210,15 +221,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             <ListItemText
               primary="作成したプロンプト"
               secondary={
-                !permissions.canCreateCustomPrompts
-                  ? '有料プラン限定'
-                  : customPromptCount > 0 ? `${customPromptCount}件` : undefined
+                customPromptCount > 0
+                  ? permissions.maxCustomPrompts !== null
+                    ? `${customPromptCount} / ${permissions.maxCustomPrompts}件`
+                    : `${customPromptCount}件`
+                  : undefined
               }
               secondaryTypographyProps={{
-                sx: {
-                  fontSize: '0.75rem',
-                  color: !permissions.canCreateCustomPrompts ? '#f44336' : '#666'
-                }
+                sx: { fontSize: '0.75rem', color: '#666' }
               }}
             />
           </ListItemButton>
