@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { Box, CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useUser } from '@clerk/clerk-react';

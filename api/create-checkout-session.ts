@@ -40,7 +40,10 @@ export default async function handler(
       billing_address_collection: 'auto',
     });
 
-    return res.status(200).json({ sessionId: session.id });
+    return res.status(200).json({
+      sessionId: session.id,
+      url: session.url
+    });
   } catch (error: any) {
     console.error('Stripe checkout session creation error:', error);
     return res.status(500).json({ error: error.message });

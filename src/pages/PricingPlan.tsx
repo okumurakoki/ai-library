@@ -15,10 +15,6 @@ import {
   Check as CheckIcon,
 } from '@mui/icons-material';
 import { useUser } from '@clerk/clerk-react';
-import { loadStripe } from '@stripe/stripe-js';
-
-// Stripeの初期化
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PricingPlan: React.FC = () => {
   const { user } = useUser();
@@ -105,13 +101,6 @@ const PricingPlan: React.FC = () => {
     setLoading(planName);
 
     try {
-      // TODO: バックエンドAPIエンドポイントを作成後に置き換え
-      // 一旦Stripe Checkoutに直接遷移する実装
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error('Stripe initialization failed');
-      }
-
       // バックエンドAPIを呼び出してCheckoutセッションを作成
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -129,13 +118,13 @@ const PricingPlan: React.FC = () => {
         throw new Error('Failed to create checkout session');
       }
 
-      const { sessionId } = await response.json();
+      const { url } = await response.json();
 
-      // Stripe Checkoutにリダイレクト
-      const result = await stripe.redirectToCheckout({ sessionId });
-
-      if (result.error) {
-        throw new Error(result.error.message);
+      // Stripe Checkoutページにリダイレクト
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Subscription error:', error);
