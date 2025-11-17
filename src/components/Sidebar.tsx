@@ -185,65 +185,76 @@ const Sidebar: React.FC<SidebarProps> = ({
           </ListItemButton>
         </ListItem>
 
-        {permissions.canCreateCustomPrompts && (
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={selectedPage === 'custom'}
-              onClick={() => {
-                onPageChange('custom');
-                onFolderSelect(null);
-                if (isMobile) onDrawerToggle();
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={selectedPage === 'custom'}
+            onClick={() => {
+              onPageChange('custom');
+              onFolderSelect(null);
+              if (isMobile) onDrawerToggle();
+            }}
+            sx={{
+              '&.Mui-selected': {
+                backgroundColor: '#f5f5f5',
+                borderLeft: '3px solid #000',
+              },
+              '&:hover': {
+                backgroundColor: '#f5f5f5',
+              },
+              opacity: permissions.canCreateCustomPrompts ? 1 : 0.5,
+            }}
+          >
+            <ListItemIcon>
+              <CreateIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="作成したプロンプト"
+              secondary={
+                !permissions.canCreateCustomPrompts
+                  ? '有料プラン限定'
+                  : customPromptCount > 0 ? `${customPromptCount}件` : undefined
+              }
+              secondaryTypographyProps={{
+                sx: {
+                  fontSize: '0.75rem',
+                  color: !permissions.canCreateCustomPrompts ? '#f44336' : '#666'
+                }
               }}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: '#f5f5f5',
-                  borderLeft: '3px solid #000',
-                },
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            >
-              <ListItemIcon>
-                <CreateIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="作成したプロンプト"
-                secondary={customPromptCount > 0 ? `${customPromptCount}件` : undefined}
-                secondaryTypographyProps={{
-                  sx: { fontSize: '0.75rem', color: '#666' }
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        )}
+            />
+          </ListItemButton>
+        </ListItem>
 
-        {permissions.canViewStatistics && (
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={selectedPage === 'statistics'}
-              onClick={() => {
-                onPageChange('statistics');
-                onFolderSelect(null);
-                if (isMobile) onDrawerToggle();
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={selectedPage === 'statistics'}
+            onClick={() => {
+              onPageChange('statistics');
+              onFolderSelect(null);
+              if (isMobile) onDrawerToggle();
+            }}
+            sx={{
+              '&.Mui-selected': {
+                backgroundColor: '#f5f5f5',
+                borderLeft: '3px solid #000',
+              },
+              '&:hover': {
+                backgroundColor: '#f5f5f5',
+              },
+              opacity: permissions.canViewStatistics ? 1 : 0.5,
+            }}
+          >
+            <ListItemIcon>
+              <BarChartIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="統計"
+              secondary={!permissions.canViewStatistics ? '有料プラン限定' : undefined}
+              secondaryTypographyProps={{
+                sx: { fontSize: '0.7rem', color: '#f44336' }
               }}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: '#f5f5f5',
-                  borderLeft: '3px solid #000',
-                },
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            >
-              <ListItemIcon>
-                <BarChartIcon />
-              </ListItemIcon>
-              <ListItemText primary="統計" />
-            </ListItemButton>
-          </ListItem>
-        )}
+            />
+          </ListItemButton>
+        </ListItem>
 
         {/* フォルダセクション */}
         <Divider sx={{ my: 1 }} />
