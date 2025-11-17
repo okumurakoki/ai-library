@@ -17,21 +17,6 @@ import {
 const PricingPlan: React.FC = () => {
   const plans = [
     {
-      name: 'ゲスト',
-      price: '¥0',
-      period: '',
-      description: 'ログイン不要でお試し',
-      features: [
-        'プロンプト閲覧 (20個まで)',
-        'コピー不可',
-        'お気に入り保存不可',
-        'カスタムプロンプト作成不可',
-      ],
-      recommended: false,
-      buttonText: '今すぐ試す',
-      color: '#999',
-    },
-    {
       name: '無料プラン',
       price: '¥0',
       period: '/ 永久無料',
@@ -85,9 +70,11 @@ const PricingPlan: React.FC = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 3,
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+          gap: 4,
           mb: 8,
+          maxWidth: 900,
+          mx: 'auto',
         }}
       >
         {plans.map((plan) => (
@@ -202,19 +189,19 @@ const PricingPlan: React.FC = () => {
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {[
-            { feature: 'プロンプト閲覧', guest: '20個', free: '20個', premium: '無制限' },
-            { feature: 'プロンプトコピー', guest: '不可', free: '無制限', premium: '無制限' },
-            { feature: 'お気に入り保存', guest: '不可', free: '50個', premium: '無制限' },
-            { feature: 'カスタムプロンプト作成', guest: '不可', free: '10個', premium: '無制限' },
-            { feature: 'フォルダ管理', guest: '不可', free: '不可', premium: '◯' },
-            { feature: 'AIニュース・記事', guest: '不可', free: '不可', premium: '◯' },
-            { feature: '統計機能', guest: '不可', free: '不可', premium: '◯' },
+            { feature: 'プロンプト閲覧', free: '20個', premium: '無制限' },
+            { feature: 'プロンプトコピー', free: '無制限', premium: '無制限' },
+            { feature: 'お気に入り保存', free: '50個', premium: '無制限' },
+            { feature: 'カスタムプロンプト作成', free: '10個', premium: '無制限' },
+            { feature: 'フォルダ管理', free: '不可', premium: '◯' },
+            { feature: 'AIニュース・記事', free: '不可', premium: '◯' },
+            { feature: '統計機能', free: '不可', premium: '◯' },
           ].map((row, index) => (
             <Box
               key={index}
               sx={{
                 display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                gridTemplateColumns: '2fr 1fr 1fr',
                 gap: 2,
                 p: 2,
                 backgroundColor: '#fff',
@@ -222,7 +209,6 @@ const PricingPlan: React.FC = () => {
               }}
             >
               <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{row.feature}</Typography>
-              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', color: '#999' }}>{row.guest}</Typography>
               <Typography sx={{ textAlign: 'center', fontSize: '0.85rem' }}>{row.free}</Typography>
               <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 600 }}>{row.premium}</Typography>
             </Box>

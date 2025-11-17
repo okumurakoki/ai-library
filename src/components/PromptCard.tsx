@@ -210,26 +210,43 @@ const PromptCard: React.FC<PromptCardProps> = ({
                   ログインしてコピー
                 </Button>
               )}
-              <Button
-                variant="contained"
-                size="small"
-                onClick={() => {
-                  console.log('Detail button clicked (grid):', prompt.id, prompt.title);
-                  onOpenDetail(prompt);
-                }}
-                sx={{
-                  borderRadius: 0,
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  '&:hover': {
-                    backgroundColor: '#333',
-                  },
-                }}
-              >
-                詳細
-              </Button>
+              {canCopy ? (
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => {
+                    console.log('Detail button clicked (grid):', prompt.id, prompt.title);
+                    onOpenDetail(prompt);
+                  }}
+                  sx={{
+                    borderRadius: 0,
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    '&:hover': {
+                      backgroundColor: '#333',
+                    },
+                  }}
+                >
+                  詳細
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  size="small"
+                  disabled
+                  sx={{
+                    borderRadius: 0,
+                    backgroundColor: '#999',
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  ログインして詳細を見る
+                </Button>
+              )}
             </Stack>
           </Box>
         )}
@@ -330,26 +347,43 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 ログインしてコピー
               </Button>
             )}
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => {
-                console.log('Detail button clicked (list):', prompt.id, prompt.title);
-                onOpenDetail(prompt);
-              }}
-              sx={{
-                borderRadius: 0,
-                backgroundColor: '#000',
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                '&:hover': {
-                  backgroundColor: '#333',
-                },
-              }}
-            >
-              詳細
-            </Button>
+            {canCopy ? (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => {
+                  console.log('Detail button clicked (list):', prompt.id, prompt.title);
+                  onOpenDetail(prompt);
+                }}
+                sx={{
+                  borderRadius: 0,
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': {
+                    backgroundColor: '#333',
+                  },
+                }}
+              >
+                詳細
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                size="small"
+                disabled
+                sx={{
+                  borderRadius: 0,
+                  backgroundColor: '#999',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                }}
+              >
+                ログインして詳細を見る
+              </Button>
+            )}
           </Stack>
         )}
       </Box>

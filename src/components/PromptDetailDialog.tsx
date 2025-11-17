@@ -28,6 +28,8 @@ interface PromptDetailDialogProps {
   open: boolean;
   prompt: Prompt | null;
   isFavorite: boolean;
+  canCopy?: boolean;
+  canSave?: boolean;
   onClose: () => void;
   onToggleFavorite: (promptId: string) => void;
   onCopy: (promptId: string) => void;
@@ -37,6 +39,8 @@ const PromptDetailDialog: React.FC<PromptDetailDialogProps> = ({
   open,
   prompt,
   isFavorite,
+  canCopy = true,
+  canSave = true,
   onClose,
   onToggleFavorite,
   onCopy,
@@ -318,32 +322,49 @@ const PromptDetailDialog: React.FC<PromptDetailDialogProps> = ({
           gap: 1,
         }}
       >
-        <IconButton
-          onClick={() => onToggleFavorite(prompt.id)}
-          sx={{
-            color: isFavorite ? '#000' : '#666',
-            '&:hover': { backgroundColor: '#f5f5f5' },
-          }}
-        >
-          {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-        </IconButton>
-        <Button
-          variant="outlined"
-          startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
-          onClick={handleCopy}
-          sx={{
-            borderRadius: 0,
-            borderColor: '#000',
-            color: '#000',
-            fontWeight: 600,
-            '&:hover': {
+        {canSave && (
+          <IconButton
+            onClick={() => onToggleFavorite(prompt.id)}
+            sx={{
+              color: isFavorite ? '#000' : '#666',
+              '&:hover': { backgroundColor: '#f5f5f5' },
+            }}
+          >
+            {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+          </IconButton>
+        )}
+        {canCopy ? (
+          <Button
+            variant="outlined"
+            startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
+            onClick={handleCopy}
+            sx={{
+              borderRadius: 0,
               borderColor: '#000',
-              backgroundColor: '#f5f5f5',
-            },
-          }}
-        >
-          {copied ? 'コピー完了' : 'コピー'}
-        </Button>
+              color: '#000',
+              fontWeight: 600,
+              '&:hover': {
+                borderColor: '#000',
+                backgroundColor: '#f5f5f5',
+              },
+            }}
+          >
+            {copied ? 'コピー完了' : 'コピー'}
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            disabled
+            sx={{
+              borderRadius: 0,
+              borderColor: '#ccc',
+              color: '#999',
+              fontWeight: 600,
+            }}
+          >
+            ログインしてコピー
+          </Button>
+        )}
         <Button
           variant="contained"
           onClick={onClose}
