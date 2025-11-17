@@ -10,6 +10,7 @@ export interface UserPermissions {
   canCreateCustomPrompts: boolean;
   canSaveFavorites: boolean;
   canExportImport: boolean;
+  canUseFolders: boolean;
   maxVisiblePrompts: number | null; // null = 無制限
   maxCustomPrompts: number | null; // null = 無制限
   maxFavorites: number | null; // null = 無制限
@@ -36,6 +37,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCreateCustomPrompts: true,
         canSaveFavorites: true,
         canExportImport: true,
+        canUseFolders: true,
         maxVisiblePrompts: null,
         maxCustomPrompts: null,
         maxFavorites: null,
@@ -51,6 +53,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCreateCustomPrompts: true,
         canSaveFavorites: true,
         canExportImport: true,
+        canUseFolders: true,
         maxVisiblePrompts: null,
         maxCustomPrompts: null,
         maxFavorites: null,
@@ -66,6 +69,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCreateCustomPrompts: true,
         canSaveFavorites: true,
         canExportImport: true,
+        canUseFolders: false,
         maxVisiblePrompts: 20,
         maxCustomPrompts: 10,
         maxFavorites: 50,
@@ -81,6 +85,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCreateCustomPrompts: false,
         canSaveFavorites: false,
         canExportImport: false,
+        canUseFolders: false,
         maxVisiblePrompts: 20,
         maxCustomPrompts: 0,
         maxFavorites: 0,
@@ -96,6 +101,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
         canCreateCustomPrompts: false,
         canSaveFavorites: false,
         canExportImport: false,
+        canUseFolders: false,
         maxVisiblePrompts: 20,
         maxCustomPrompts: 0,
         maxFavorites: 0,

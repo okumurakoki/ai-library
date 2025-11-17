@@ -330,7 +330,7 @@ function App() {
           }}
         >
           {/* ページコンテンツ */}
-          {(selectedPage === 'home' || selectedPage === 'favorites' || selectedPage === 'custom') && (
+          {selectedPage === 'home' && (
             <PromptLibrary
               prompts={displayPrompts}
               selectedCategory={selectedCategory}
@@ -352,6 +352,58 @@ function App() {
               onUpdateCustomPrompt={handleUpdateCustomPrompt}
               onDeleteCustomPrompt={handleDeleteCustomPrompt}
             />
+          )}
+
+          {selectedPage === 'favorites' && (
+            permissions.canSaveFavorites ? (
+              <PromptLibrary
+                prompts={displayPrompts}
+                selectedCategory={selectedCategory}
+                selectedPage={selectedPage}
+                favorites={favorites}
+                customPrompts={customPrompts}
+                userPlan={userPlan}
+                permissions={permissions}
+                onToggleFavorite={toggleFavorite}
+                folders={favoriteFolders}
+                onCreateFolder={handleCreateFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onRenameFolder={handleRenameFolder}
+                onAddToFolder={handleAddToFolder}
+                onRemoveFromFolder={handleRemoveFromFolder}
+                onPromptCopy={recordPromptUse}
+                onImportPrompts={handleImportPrompts}
+                onCreateCustomPrompt={handleCreateCustomPrompt}
+                onUpdateCustomPrompt={handleUpdateCustomPrompt}
+                onDeleteCustomPrompt={handleDeleteCustomPrompt}
+              />
+            ) : <PricingPlan />
+          )}
+
+          {selectedPage === 'custom' && (
+            permissions.canCreateCustomPrompts ? (
+              <PromptLibrary
+                prompts={displayPrompts}
+                selectedCategory={selectedCategory}
+                selectedPage={selectedPage}
+                favorites={favorites}
+                customPrompts={customPrompts}
+                userPlan={userPlan}
+                permissions={permissions}
+                onToggleFavorite={toggleFavorite}
+                folders={favoriteFolders}
+                onCreateFolder={handleCreateFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onRenameFolder={handleRenameFolder}
+                onAddToFolder={handleAddToFolder}
+                onRemoveFromFolder={handleRemoveFromFolder}
+                onPromptCopy={recordPromptUse}
+                onImportPrompts={handleImportPrompts}
+                onCreateCustomPrompt={handleCreateCustomPrompt}
+                onUpdateCustomPrompt={handleUpdateCustomPrompt}
+                onDeleteCustomPrompt={handleDeleteCustomPrompt}
+              />
+            ) : <PricingPlan />
           )}
 
           {selectedPage === 'articles' && (

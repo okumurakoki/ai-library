@@ -213,6 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               '&:hover': {
                 backgroundColor: '#f5f5f5',
               },
+              opacity: permissions.canCreateCustomPrompts ? 1 : 0.5,
             }}
           >
             <ListItemIcon>
@@ -221,14 +222,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             <ListItemText
               primary="作成したプロンプト"
               secondary={
-                customPromptCount > 0
+                !permissions.canCreateCustomPrompts
+                  ? 'ログインが必要'
+                  : customPromptCount > 0
                   ? permissions.maxCustomPrompts !== null
                     ? `${customPromptCount} / ${permissions.maxCustomPrompts}件`
                     : `${customPromptCount}件`
                   : undefined
               }
               secondaryTypographyProps={{
-                sx: { fontSize: '0.75rem', color: '#666' }
+                sx: {
+                  fontSize: '0.75rem',
+                  color: !permissions.canCreateCustomPrompts ? '#f44336' : '#666'
+                }
               }}
             />
           </ListItemButton>
@@ -266,77 +272,81 @@ const Sidebar: React.FC<SidebarProps> = ({
           </ListItemButton>
         </ListItem>
 
-        {/* フォルダセクション */}
-        <Divider sx={{ my: 1 }} />
-        <ListItem sx={{ px: 2, py: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#666', fontSize: '0.875rem' }}>
-              フォルダ
-            </Typography>
-            <Button
-              size="small"
-              startIcon={<SettingsIcon />}
-              onClick={onOpenFolderDialog}
-              sx={{
-                minWidth: 'auto',
-                fontSize: '0.75rem',
-                color: '#666',
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                  color: '#000',
-                },
-              }}
-            >
-              管理
-            </Button>
-          </Box>
-        </ListItem>
-        {folders.length > 0 && (
+        {/* フォルダセクション（有料プラン限定） */}
+        {permissions.canUseFolders && (
           <>
-            {folders.map((folder) => (
-              <ListItem key={folder.id} disablePadding>
-                <ListItemButton
-                  selected={selectedFolder === folder.id}
-                  onClick={() => {
-                    onFolderSelect(folder.id);
-                    onPageChange('home');
-                    if (isMobile) onDrawerToggle();
-                  }}
+            <Divider sx={{ my: 1 }} />
+            <ListItem sx={{ px: 2, py: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#666', fontSize: '0.875rem' }}>
+                  フォルダ
+                </Typography>
+                <Button
+                  size="small"
+                  startIcon={<SettingsIcon />}
+                  onClick={onOpenFolderDialog}
                   sx={{
-                    pl: 3,
-                    '&.Mui-selected': {
-                      backgroundColor: '#f5f5f5',
-                      borderLeft: '3px solid #000',
-                    },
+                    minWidth: 'auto',
+                    fontSize: '0.75rem',
+                    color: '#666',
                     '&:hover': {
                       backgroundColor: '#f5f5f5',
+                      color: '#000',
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    {selectedFolder === folder.id ? (
-                      <FolderOpenIcon fontSize="small" />
-                    ) : (
-                      <FolderIcon fontSize="small" />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={folder.name}
-                    secondary={`${folder.promptIds.length}件`}
-                    primaryTypographyProps={{
-                      variant: 'body2',
-                      sx: { fontSize: '0.875rem' }
-                    }}
-                    secondaryTypographyProps={{
-                      sx: { fontSize: '0.75rem', color: '#666' }
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
+                  管理
+                </Button>
+              </Box>
+            </ListItem>
+            {folders.length > 0 && (
+              <>
+                {folders.map((folder) => (
+                  <ListItem key={folder.id} disablePadding>
+                    <ListItemButton
+                      selected={selectedFolder === folder.id}
+                      onClick={() => {
+                        onFolderSelect(folder.id);
+                        onPageChange('home');
+                        if (isMobile) onDrawerToggle();
+                      }}
+                      sx={{
+                        pl: 3,
+                        '&.Mui-selected': {
+                          backgroundColor: '#f5f5f5',
+                          borderLeft: '3px solid #000',
+                        },
+                        '&:hover': {
+                          backgroundColor: '#f5f5f5',
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        {selectedFolder === folder.id ? (
+                          <FolderOpenIcon fontSize="small" />
+                        ) : (
+                          <FolderIcon fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={folder.name}
+                        secondary={`${folder.promptIds.length}件`}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          sx: { fontSize: '0.875rem' }
+                        }}
+                        secondaryTypographyProps={{
+                          sx: { fontSize: '0.75rem', color: '#666' }
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </>
+            )}
+            <Divider sx={{ my: 1 }} />
           </>
         )}
-        <Divider sx={{ my: 1 }} />
 
         <ListItem disablePadding>
           <ListItemButton
