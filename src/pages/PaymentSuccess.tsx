@@ -24,34 +24,56 @@ const PaymentSuccess = () => {
         return;
       }
 
-      try {
-        // ユーザープランを同期
-        const response = await fetch('/api/sync-user-plan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id }),
-        });
+      // すでに同期済みかチェック（sessionIdをキーにする）
+      if (sessionId) {
+        const syncKey = `synced_${sessionId}`;
+        const alreadySynced = sessionStorage.getItem(syncKey);
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('User plan synced:', data.plan);
-
-          // Clerkのキャッシュをリフレッシュするために少し待つ
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // ページをリロードしてメタデータを更新
-          window.location.reload();
-        } else {
-          console.error('Failed to sync user plan');
+        if (alreadySynced) {
+          console.log('Already synced for this session');
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Sync error:', error);
-      } finally {
+
+        try {
+          // ユーザープランを同期
+          const response = await fetch('/api/sync-user-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('User plan synced:', data.plan);
+
+            // 同期完了をマーク
+            sessionStorage.setItem(syncKey, 'true');
+
+            // Clerkのキャッシュをリフレッシュするために少し待つ
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // ページをリロード
+            window.location.href = '/?payment=success&synced=true';
+          } else {
+            console.error('Failed to sync user plan');
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Sync error:', error);
+          setLoading(false);
+        }
+      } else {
         setLoading(false);
       }
     };
 
-    if (sessionId && user) {
+    // syncedパラメータがある場合は同期済み
+    const alreadySynced = urlParams.get('synced') === 'true';
+
+    if (alreadySynced) {
+      setLoading(false);
+    } else if (sessionId && user) {
       syncUserPlan();
     } else {
       setTimeout(() => {
