@@ -405,6 +405,61 @@ const Sidebar: React.FC<SidebarProps> = ({
           </ListItemButton>
         </ListItem>
 
+        {user && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={async () => {
+                try {
+                  // Supabaseからstripe_customer_idを取得
+                  const customerResponse = await fetch('/api/get-customer-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id }),
+                  });
+
+                  if (!customerResponse.ok) {
+                    alert('サブスクリプションが見つかりません。先に料金プランに登録してください。');
+                    return;
+                  }
+
+                  const { customerId } = await customerResponse.json();
+
+                  // Customer Portalセッションを作成
+                  const response = await fetch('/api/create-portal-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId }),
+                  });
+
+                  const { url } = await response.json();
+                  if (url) {
+                    window.location.href = url;
+                  }
+                } catch (error) {
+                  console.error('Portal error:', error);
+                  alert('エラーが発生しました');
+                }
+              }}
+              sx={{
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="プラン管理"
+                secondary="解約・変更"
+                secondaryTypographyProps={{
+                  sx: { fontSize: '0.75rem', color: '#666' }
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        )}
+
         {isAdmin && (
           <>
             <Divider sx={{ my: 1 }} />
