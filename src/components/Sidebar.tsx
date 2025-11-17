@@ -28,7 +28,9 @@ import {
   Settings as SettingsIcon,
   BarChart as BarChartIcon,
   Create as CreateIcon,
+  Login as LoginIcon,
 } from '@mui/icons-material';
+import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { CATEGORIES } from '../data/categories';
 import type { FavoriteFolder } from '../types';
 
@@ -42,6 +44,7 @@ interface SidebarProps {
   folders: FavoriteFolder[];
   selectedFolder: string | null;
   isAdmin: boolean;
+  user: any;
   onPageChange: (page: string) => void;
   onCategoryChange: (category: string) => void;
   onFolderSelect: (folderId: string | null) => void;
@@ -59,6 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   folders,
   selectedFolder,
   isAdmin,
+  user,
   onPageChange,
   onCategoryChange,
   onFolderSelect,
@@ -434,6 +438,71 @@ const Sidebar: React.FC<SidebarProps> = ({
           </Box>
         </>
       )}
+
+      {/* ユーザー認証セクション */}
+      <Box sx={{ mt: 'auto', borderTop: '1px solid #e0e0e0', p: 2 }}>
+        {user ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: {
+                    width: 40,
+                    height: 40,
+                  },
+                },
+              }}
+            />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.fullName || user.primaryEmailAddress?.emailAddress || 'ユーザー'}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#666' }}>
+                {(user.publicMetadata?.plan as string) === 'premium' ? 'プレミアム' : '無料プラン'}
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <SignInButton mode="modal">
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<LoginIcon />}
+                sx={{
+                  borderRadius: 0,
+                  borderColor: '#000',
+                  color: '#000',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#000',
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                ログイン
+              </Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  borderRadius: 0,
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: '#333',
+                  },
+                }}
+              >
+                新規登録
+              </Button>
+            </SignUpButton>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useUser } from '@clerk/clerk-react';
 import Sidebar from './components/Sidebar';
 import PromptLibrary from './pages/PromptLibrary';
 import Articles from './pages/Articles';
@@ -76,10 +77,10 @@ const theme = createTheme({
 });
 
 function App() {
+  const { user, isLoaded } = useUser();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [userPlan] = useState<'free' | 'premium'>('free'); // 実際はClerkから取得
   const { favorites, toggleFavorite } = useFavorites();
   const { recordPromptUse } = usePromptHistory();
   const [favoriteFolders, setFavoriteFolders] = useState<FavoriteFolder[]>([]);
@@ -88,8 +89,9 @@ function App() {
   const [customPrompts, setCustomPrompts] = useState<Prompt[]>([]);
   const [allPrompts, setAllPrompts] = useState([...SAMPLE_PROMPTS]);
 
-  // 管理者フラグ（実際はClerkから取得）
-  const isAdmin = true; // デモ用に true に設定
+  // Clerkからユーザープランと管理者権限を取得
+  const userPlan = (user?.publicMetadata?.plan as 'free' | 'premium') || 'free';
+  const isAdmin = user?.publicMetadata?.isAdmin === true;
 
   // カスタムプロンプトとサンプルプロンプトを統合
   useMemo(() => {
@@ -245,6 +247,18 @@ function App() {
     setCustomPrompts(customPrompts.filter((p) => p.id !== promptId));
   };
 
+  // ローディング中の表示
+  if (!isLoaded) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <Typography>読み込み中...</Typography>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -270,6 +284,7 @@ function App() {
           folders={favoriteFolders}
           selectedFolder={selectedFolder}
           isAdmin={isAdmin}
+          user={user}
           onPageChange={handlePageChange}
           onCategoryChange={handleCategoryChange}
           onFolderSelect={setSelectedFolder}
