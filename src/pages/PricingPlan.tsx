@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -9,12 +9,21 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
 } from '@mui/material';
 import {
   Check as CheckIcon,
 } from '@mui/icons-material';
+import { useUser } from '@clerk/clerk-react';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Stripeの初期化
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PricingPlan: React.FC = () => {
+  const { user } = useUser();
+  const [loading, setLoading] = useState<string | null>(null);
+
   const plans = [
     {
       name: '無料プラン',
@@ -31,6 +40,7 @@ const PricingPlan: React.FC = () => {
       recommended: false,
       buttonText: '無料で登録',
       color: '#000',
+      priceId: null, // 無料プランなのでなし
     },
     {
       name: 'スタンダードプラン',
@@ -50,10 +60,11 @@ const PricingPlan: React.FC = () => {
       recommended: true,
       buttonText: '今すぐ登録',
       color: '#000',
+      priceId: 'price_1SUYLXKnrmty0hAGakLAAHqk',
     },
     {
       name: 'プレミアムプラン',
-      price: '¥3,000',
+      price: '¥2,500',
       period: '/ 月',
       description: 'すべての機能を使いこなす',
       features: [
@@ -70,8 +81,69 @@ const PricingPlan: React.FC = () => {
       recommended: false,
       buttonText: '今すぐアップグレード',
       color: '#000',
+      priceId: 'price_1SUYN8Knrmty0hAG7xWd5VQO',
     },
   ];
+
+  const handleSubscribe = async (priceId: string | null, planName: string) => {
+    if (!priceId) {
+      // 無料プランの場合はログイン画面へ
+      if (!user) {
+        // TODO: Clerkのログイン画面を表示
+        alert('ログインしてください');
+        return;
+      }
+      alert('既に無料プランをご利用中です');
+      return;
+    }
+
+    if (!user) {
+      alert('ログインしてからご購入ください');
+      return;
+    }
+
+    setLoading(planName);
+
+    try {
+      // TODO: バックエンドAPIエンドポイントを作成後に置き換え
+      // 一旦Stripe Checkoutに直接遷移する実装
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Stripe initialization failed');
+      }
+
+      // バックエンドAPIを呼び出してCheckoutセッションを作成
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: user.id,
+          userEmail: user.primaryEmailAddress?.emailAddress,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { sessionId } = await response.json();
+
+      // Stripe Checkoutにリダイレクト
+      const result = await stripe.redirectToCheckout({ sessionId });
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -176,6 +248,8 @@ const PricingPlan: React.FC = () => {
                 <Button
                   variant={plan.recommended ? 'contained' : 'outlined'}
                   fullWidth
+                  onClick={() => handleSubscribe(plan.priceId, plan.name)}
+                  disabled={loading === plan.name}
                   sx={{
                     borderRadius: 0,
                     backgroundColor: plan.recommended ? '#000' : 'transparent',
@@ -191,7 +265,11 @@ const PricingPlan: React.FC = () => {
                     },
                   }}
                 >
-                  {plan.buttonText}
+                  {loading === plan.name ? (
+                    <CircularProgress size={24} sx={{ color: plan.recommended ? '#fff' : '#000' }} />
+                  ) : (
+                    plan.buttonText
+                  )}
                 </Button>
               </Box>
             </Card>

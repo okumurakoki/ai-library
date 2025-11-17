@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Box, CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useUser } from '@clerk/clerk-react';
@@ -8,6 +9,7 @@ import Articles from './pages/Articles';
 import PricingPlan from './pages/PricingPlan';
 import AdminPanel from './pages/AdminPanel';
 import Statistics from './pages/Statistics';
+import PaymentSuccess from './pages/PaymentSuccess';
 import FavoriteFolderDialog from './components/FavoriteFolderDialog';
 import { SAMPLE_PROMPTS } from './data/prompts';
 import { useFavorites } from './hooks/useFavorites';
@@ -89,6 +91,10 @@ function App() {
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [customPrompts, setCustomPrompts] = useState<Prompt[]>([]);
   const [allPrompts, setAllPrompts] = useState([...SAMPLE_PROMPTS]);
+
+  // URLパラメータをチェックしてサンクスページを表示
+  const urlParams = new URLSearchParams(window.location.search);
+  const showPaymentSuccess = urlParams.get('payment') === 'success';
 
   // ユーザー権限を取得
   const permissions = getUserPermissions(user);
@@ -282,6 +288,16 @@ function App() {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <Typography>読み込み中...</Typography>
         </Box>
+      </ThemeProvider>
+    );
+  }
+
+  // 決済完了ページを表示
+  if (showPaymentSuccess) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <PaymentSuccess />
       </ThemeProvider>
     );
   }
