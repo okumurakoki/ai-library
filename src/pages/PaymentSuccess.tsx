@@ -14,7 +14,6 @@ import { useUser } from '@clerk/clerk-react';
 const PaymentSuccess = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('session_id');
 
@@ -24,8 +23,6 @@ const PaymentSuccess = () => {
         setLoading(false);
         return;
       }
-
-      setSyncing(true);
 
       try {
         // ユーザープランを同期
@@ -50,7 +47,6 @@ const PaymentSuccess = () => {
       } catch (error) {
         console.error('Sync error:', error);
       } finally {
-        setSyncing(false);
         setLoading(false);
       }
     };
