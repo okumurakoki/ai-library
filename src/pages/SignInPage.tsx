@@ -21,10 +21,9 @@ const SignInPage = () => {
               card: 'shadow-none border border-gray-200',
             },
           }}
-          routing="path"
-          path="/sign-in"
           signUpUrl="/sign-up"
-          redirectUrl="/"
+          forceRedirectUrl="/"
+          fallbackRedirectUrl="/"
         />
       </Box>
     </Container>

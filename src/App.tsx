@@ -339,22 +339,19 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Routes>
-          <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
         </Routes>
       </ThemeProvider>
     );
   }
 
-  // ログインしていない場合はサインインページにリダイレクト
+  // ログインしていない場合は、サインインページを表示（リダイレクトではなく直接表示）
   if (!user) {
-    window.location.href = '/sign-in';
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <Typography>リダイレクト中...</Typography>
-        </Box>
+        <SignInPage />
       </ThemeProvider>
     );
   }
