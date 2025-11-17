@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { clerkClient } from '@clerk/backend';
 
 // Stripeクライアントの初期化（テストモード用）
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST || process.env.STRIPE_SECRET_KEY || '', {
@@ -68,6 +69,21 @@ export default async function handler(
           updated_at: new Date().toISOString(),
         });
 
+        // Clerkのユーザーメタデータを更新
+        if (userId) {
+          try {
+            await clerkClient.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                plan: 'premium',
+                stripeCustomerId: customerId,
+              },
+            });
+            console.log('Clerk metadata updated for user:', userId);
+          } catch (error) {
+            console.error('Failed to update Clerk metadata:', error);
+          }
+        }
+
         console.log('Subscription created for user:', userId);
         break;
       }
@@ -103,6 +119,7 @@ export default async function handler(
         const subscription = event.data.object;
         const customerId = subscription.customer;
 
+        // Supabaseのステータスを更新
         await supabase
           .from('user_subscriptions')
           .update({
@@ -110,6 +127,27 @@ export default async function handler(
             updated_at: new Date().toISOString(),
           })
           .eq('stripe_customer_id', customerId);
+
+        // ユーザーIDを取得
+        const { data: userSub } = await supabase
+          .from('user_subscriptions')
+          .select('user_id')
+          .eq('stripe_customer_id', customerId)
+          .single();
+
+        // Clerkのユーザーメタデータを更新（freeプランにダウングレード）
+        if (userSub?.user_id) {
+          try {
+            await clerkClient.users.updateUserMetadata(userSub.user_id, {
+              publicMetadata: {
+                plan: 'free',
+              },
+            });
+            console.log('Clerk metadata downgraded to free for user:', userSub.user_id);
+          } catch (error) {
+            console.error('Failed to update Clerk metadata:', error);
+          }
+        }
 
         console.log('Subscription canceled for customer:', customerId);
         break;
