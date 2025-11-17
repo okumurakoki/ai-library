@@ -54,9 +54,9 @@ const PricingPlan: React.FC = () => {
         '毎月新規プロンプト追加',
       ],
       recommended: true,
-      buttonText: '今すぐ登録（テスト）',
+      buttonText: '今すぐ登録',
       color: '#000',
-      priceId: 'price_1SUZ5JKnrmty0hAGbdGG4dcT', // テスト用Price ID
+      priceId: 'price_1SUYLXKnrmty0hAGakLAAHqk', // 本番用Price ID
     },
     {
       name: 'プレミアムプラン',
@@ -75,9 +75,9 @@ const PricingPlan: React.FC = () => {
         '毎月新規プロンプト追加',
       ],
       recommended: false,
-      buttonText: '準備中',
+      buttonText: '今すぐ登録',
       color: '#000',
-      priceId: null, // テスト用Price IDは未作成
+      priceId: 'price_1SUYN8Knrmty0hAG7xWd5VQO', // 本番用Price ID
     },
   ];
 
