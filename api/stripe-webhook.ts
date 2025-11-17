@@ -1,7 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import { clerkClient } from '@clerk/backend';
+import { createClerkClient } from '@clerk/backend';
+
+// Clerkクライアントの初期化
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
 
 // Stripeクライアントの初期化（本番モード用）
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -58,12 +63,34 @@ export default async function handler(
         const customerId = session.customer;
         const subscriptionId = session.subscription;
 
+        // サブスクリプション詳細を取得してPrice IDを確認
+        let planType = 'premium';
+        let planName = 'premium';
+
+        if (subscriptionId && typeof subscriptionId === 'string') {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const priceId = subscription.items.data[0]?.price.id;
+
+          // Price IDに応じてプランを判定
+          if (priceId === 'price_1SUYLXKnrmty0hAGakLAAHqk') {
+            // スタンダードプラン (¥1,500)
+            planType = 'standard';
+            planName = 'standard';
+          } else if (priceId === 'price_1SUYN8Knrmty0hAG7xWd5VQO') {
+            // プレミアムプラン (¥2,500)
+            planType = 'premium';
+            planName = 'premium';
+          }
+
+          console.log('Detected plan:', planName, 'from price:', priceId);
+        }
+
         // Supabaseにサブスクリプション情報を保存
         await supabase.from('user_subscriptions').upsert({
           user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
-          plan_type: 'premium', // TODO: priceIdから判定
+          plan_type: planType,
           status: 'active',
           current_period_start: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -74,11 +101,11 @@ export default async function handler(
           try {
             await clerkClient.users.updateUserMetadata(userId, {
               publicMetadata: {
-                plan: 'premium',
+                plan: planName,
                 stripeCustomerId: customerId,
               },
             });
-            console.log('Clerk metadata updated for user:', userId);
+            console.log('Clerk metadata updated for user:', userId, 'plan:', planName);
           } catch (error) {
             console.error('Failed to update Clerk metadata:', error);
           }
