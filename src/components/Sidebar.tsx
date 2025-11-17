@@ -410,7 +410,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <ListItemButton
               onClick={async () => {
                 try {
-                  // Supabaseからstripe_customer_idを取得
                   const customerResponse = await fetch('/api/get-customer-id', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -424,7 +423,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                   const { customerId } = await customerResponse.json();
 
-                  // Customer Portalセッションを作成
                   const response = await fetch('/api/create-portal-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
