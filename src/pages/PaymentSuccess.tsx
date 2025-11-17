@@ -9,25 +9,60 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useUser } from '@clerk/clerk-react';
 
 const PaymentSuccess = () => {
+  const { user } = useUser();
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('session_id');
 
   useEffect(() => {
-    // セッションIDがある場合、サーバーに確認を送る（オプション）
-    if (sessionId) {
-      // TODO: バックエンドAPIでセッションを確認
-      // fetch(`/api/verify-session?session_id=${sessionId}`)
-      console.log('Session ID:', sessionId);
-    }
+    const syncUserPlan = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-    // ローディング状態を解除
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, [sessionId]);
+      setSyncing(true);
+
+      try {
+        // ユーザープランを同期
+        const response = await fetch('/api/sync-user-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('User plan synced:', data.plan);
+
+          // Clerkのキャッシュをリフレッシュするために少し待つ
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          // ページをリロードしてメタデータを更新
+          window.location.reload();
+        } else {
+          console.error('Failed to sync user plan');
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+      } finally {
+        setSyncing(false);
+        setLoading(false);
+      }
+    };
+
+    if (sessionId && user) {
+      syncUserPlan();
+    } else {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+  }, [sessionId, user]);
 
   const handleGoToLibrary = () => {
     window.location.href = '/';

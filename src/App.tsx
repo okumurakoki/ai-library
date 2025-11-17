@@ -102,6 +102,31 @@ function App() {
   // サインイン・サインアップページかどうかをチェック
   const isAuthPage = location.pathname === '/sign-in' || location.pathname === '/sign-up';
 
+  // ユーザーがログインした時に一度だけプランを同期
+  useMemo(() => {
+    if (user && !showPaymentSuccess && !isAuthPage) {
+      // ローカルストレージでプラン同期済みかチェック
+      const lastSync = localStorage.getItem(`plan_sync_${user.id}`);
+      const now = Date.now();
+      const ONE_HOUR = 60 * 60 * 1000;
+
+      // 1時間以内に同期済みでなければ同期
+      if (!lastSync || now - parseInt(lastSync) > ONE_HOUR) {
+        fetch('/api/sync-user-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log('Background plan sync:', data.plan);
+            localStorage.setItem(`plan_sync_${user.id}`, now.toString());
+          })
+          .catch(err => console.error('Background sync failed:', err));
+      }
+    }
+  }, [user, showPaymentSuccess, isAuthPage]);
+
   // ユーザー権限を取得
   const permissions = getUserPermissions(user);
   const userPlan = (user?.publicMetadata?.plan as 'free' | 'premium') || 'free';

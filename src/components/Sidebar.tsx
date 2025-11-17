@@ -555,7 +555,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {user.fullName || user.primaryEmailAddress?.emailAddress || 'ユーザー'}
               </Typography>
               <Typography variant="caption" sx={{ color: '#666' }}>
-                {(user.publicMetadata?.plan as string) === 'premium' ? 'プレミアム' : '無料プラン'}
+                {(user.publicMetadata?.plan as string) === 'premium'
+                  ? 'プレミアムプラン'
+                  : (user.publicMetadata?.plan as string) === 'standard'
+                  ? 'スタンダードプラン'
+                  : '無料プラン'}
               </Typography>
             </Box>
           </Box>

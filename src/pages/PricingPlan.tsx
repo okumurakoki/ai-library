@@ -20,9 +20,13 @@ const PricingPlan: React.FC = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState<string | null>(null);
 
+  // ユーザーの現在のプラン
+  const currentPlan = (user?.publicMetadata?.plan as string) || 'free';
+
   const plans = [
     {
       name: '無料プラン',
+      planType: 'free',
       price: '¥0',
       period: '/ 永久無料',
       description: 'まずはここから始めよう',
@@ -34,12 +38,12 @@ const PricingPlan: React.FC = () => {
         'エクスポート/インポート機能',
       ],
       recommended: false,
-      buttonText: '無料で登録',
       color: '#000',
       priceId: null, // 無料プランなのでなし
     },
     {
       name: 'スタンダードプラン',
+      planType: 'standard',
       price: '¥1,500',
       period: '/ 月',
       description: 'もっと活用したい方に',
@@ -54,12 +58,12 @@ const PricingPlan: React.FC = () => {
         '毎月新規プロンプト追加',
       ],
       recommended: true,
-      buttonText: '今すぐ登録',
       color: '#000',
       priceId: 'price_1SUYLXKnrmty0hAGakLAAHqk', // 本番用Price ID
     },
     {
       name: 'プレミアムプラン',
+      planType: 'premium',
       price: '¥2,500',
       period: '/ 月',
       description: 'すべての機能を使いこなす',
@@ -75,11 +79,26 @@ const PricingPlan: React.FC = () => {
         '毎月新規プロンプト追加',
       ],
       recommended: false,
-      buttonText: '今すぐ登録',
       color: '#000',
       priceId: 'price_1SUYN8Knrmty0hAG7xWd5VQO', // 本番用Price ID
     },
   ];
+
+  // ボタンのテキストを決定
+  const getButtonText = (planType: string) => {
+    if (currentPlan === planType) {
+      return '現在のプラン';
+    }
+    if (planType === 'free') {
+      return user ? '現在のプラン' : '無料で登録';
+    }
+    return '今すぐ登録';
+  };
+
+  // ボタンのdisabled状態を決定
+  const isButtonDisabled = (planType: string) => {
+    return currentPlan === planType;
+  };
 
   const handleSubscribe = async (priceId: string | null, planName: string) => {
     if (!priceId) {
@@ -241,7 +260,7 @@ const PricingPlan: React.FC = () => {
                   variant={plan.recommended ? 'contained' : 'outlined'}
                   fullWidth
                   onClick={() => handleSubscribe(plan.priceId, plan.name)}
-                  disabled={loading === plan.name}
+                  disabled={loading === plan.name || isButtonDisabled(plan.planType)}
                   sx={{
                     borderRadius: 0,
                     backgroundColor: plan.recommended ? '#000' : 'transparent',
@@ -255,12 +274,17 @@ const PricingPlan: React.FC = () => {
                       backgroundColor: plan.recommended ? '#333' : 'rgba(0,0,0,0.05)',
                       borderColor: plan.color,
                     },
+                    '&.Mui-disabled': {
+                      backgroundColor: currentPlan === plan.planType ? '#e0e0e0' : undefined,
+                      color: currentPlan === plan.planType ? '#666' : undefined,
+                      borderColor: currentPlan === plan.planType ? '#e0e0e0' : undefined,
+                    },
                   }}
                 >
                   {loading === plan.name ? (
                     <CircularProgress size={24} sx={{ color: plan.recommended ? '#fff' : '#000' }} />
                   ) : (
-                    plan.buttonText
+                    getButtonText(plan.planType)
                   )}
                 </Button>
               </Box>
