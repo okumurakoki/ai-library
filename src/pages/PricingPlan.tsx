@@ -9,7 +9,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Chip,
 } from '@mui/material';
 import {
   Check as CheckIcon,
@@ -18,117 +17,151 @@ import {
 const PricingPlan: React.FC = () => {
   const plans = [
     {
-      name: '無料プラン',
+      name: 'ゲスト',
       price: '¥0',
-      period: '/ 月',
+      period: '',
+      description: 'ログイン不要でお試し',
       features: [
-        '制限付きプロンプト閲覧',
-        '月10回までコピー可能',
-        '基本カテゴリのアクセス',
-        'コミュニティサポート',
+        'プロンプト閲覧 (20個まで)',
+        'コピー不可',
+        'お気に入り保存不可',
+        'カスタムプロンプト作成不可',
       ],
       recommended: false,
-      buttonText: '無料で始める',
+      buttonText: '今すぐ試す',
+      color: '#999',
+    },
+    {
+      name: '無料プラン',
+      price: '¥0',
+      period: '/ 永久無料',
+      description: 'まずはここから始めよう',
+      features: [
+        'プロンプト閲覧 (20個まで)',
+        'プロンプトコピー無制限',
+        'お気に入り保存 (50個まで)',
+        'カスタムプロンプト作成 (10個まで)',
+        'エクスポート/インポート機能',
+      ],
+      recommended: false,
+      buttonText: '無料で登録',
+      color: '#000',
     },
     {
       name: 'プレミアムプラン',
       price: '¥1,500',
       period: '/ 月',
+      description: 'すべての機能を使いこなす',
       features: [
-        'すべてのプロンプト見放題',
-        '無制限コピー',
-        '新着プロンプトの優先アクセス',
+        'すべてのプロンプト見放題 (無制限)',
+        'プロンプトコピー無制限',
+        'お気に入り保存無制限',
+        'カスタムプロンプト作成無制限',
+        'フォルダ管理機能',
         'AIニュース・記事の閲覧',
-        'カテゴリ別フィルタリング',
-        'お気に入り機能',
+        '統計機能',
         '優先サポート',
         '毎月新規プロンプト追加',
       ],
       recommended: true,
-      buttonText: '今すぐ登録',
+      buttonText: '今すぐアップグレード',
+      color: '#000',
     },
   ];
 
   return (
     <Box sx={{ p: 3 }}>
       {/* ヘッダー */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            料金プラン
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#666', mt: 0.5 }}>
-            業種別に最適化された70以上のプロンプトをワンクリックでコピー
-          </Typography>
-        </Box>
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+          料金プラン
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#666', maxWidth: 600, mx: 'auto', lineHeight: 1.8 }}>
+          あなたに最適なプランを選んで、AIプロンプトライブラリを活用しましょう
+        </Typography>
       </Box>
 
       {/* プランカード */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
           gap: 3,
+          mb: 8,
         }}
       >
         {plans.map((plan) => (
           <Box key={plan.name}>
             <Card
               sx={{
-                border: '2px solid #000',
+                border: plan.recommended ? '3px solid #000' : '1px solid #e0e0e0',
                 borderRadius: 0,
                 position: 'relative',
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                transform: plan.recommended ? 'scale(1.05)' : 'scale(1)',
                 '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  transform: plan.recommended ? 'scale(1.07)' : 'scale(1.02)',
+                  boxShadow: plan.recommended ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.1)',
                 },
-                transition: 'all 0.2s',
+                transition: 'all 0.3s ease',
               }}
             >
               {plan.recommended && (
-                <Chip
-                  label="おすすめ"
+                <Box
                   sx={{
                     position: 'absolute',
-                    top: 16,
-                    right: 16,
+                    top: -16,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     backgroundColor: '#000',
                     color: '#fff',
-                    borderRadius: 0,
-                    fontWeight: 600,
+                    px: 3,
+                    py: 0.5,
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    letterSpacing: 1,
                   }}
-                />
+                >
+                  RECOMMENDED
+                </Box>
               )}
               <CardContent sx={{ p: 4, pb: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: 700, mb: 1 }}
+                  sx={{ fontWeight: 700, mb: 0.5, color: plan.color }}
                 >
                   {plan.name}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 3 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: '#666', mb: 3, minHeight: 40 }}
+                >
+                  {plan.description}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 4 }}>
                   <Typography
                     variant="h3"
-                    sx={{ fontWeight: 700, fontSize: { xs: '2rem', sm: '2.5rem' } }}
+                    sx={{ fontWeight: 700, fontSize: { xs: '2.2rem', sm: '2.8rem' }, color: plan.color }}
                   >
                     {plan.price}
                   </Typography>
-                  <Typography variant="body1" sx={{ color: '#666', ml: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: '#666', ml: 1 }}>
                     {plan.period}
                   </Typography>
                 </Box>
                 <List sx={{ mb: 'auto' }}>
                   {plan.features.map((feature, index) => (
-                    <ListItem key={index} sx={{ px: 0, py: 0.5 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <CheckIcon sx={{ color: '#000' }} />
+                    <ListItem key={index} sx={{ px: 0, py: 0.75 }}>
+                      <ListItemIcon sx={{ minWidth: 32 }}>
+                        <CheckIcon sx={{ color: plan.color, fontSize: '1.2rem' }} />
                       </ListItemIcon>
                       <ListItemText
                         primary={feature}
                         primaryTypographyProps={{
-                          fontSize: '0.9rem',
+                          fontSize: '0.875rem',
+                          lineHeight: 1.6,
                         }}
                       />
                     </ListItem>
@@ -137,17 +170,20 @@ const PricingPlan: React.FC = () => {
               </CardContent>
               <Box sx={{ p: 4, pt: 2 }}>
                 <Button
-                  variant="contained"
+                  variant={plan.recommended ? 'contained' : 'outlined'}
                   fullWidth
                   sx={{
                     borderRadius: 0,
-                    backgroundColor: '#000',
-                    color: '#fff',
-                    fontWeight: 600,
+                    backgroundColor: plan.recommended ? '#000' : 'transparent',
+                    borderColor: plan.color,
+                    color: plan.recommended ? '#fff' : plan.color,
+                    fontWeight: 700,
                     py: 1.5,
-                    fontSize: '1rem',
+                    fontSize: '0.95rem',
+                    letterSpacing: 0.5,
                     '&:hover': {
-                      backgroundColor: '#333',
+                      backgroundColor: plan.recommended ? '#333' : 'rgba(0,0,0,0.05)',
+                      borderColor: plan.color,
                     },
                   }}
                 >
@@ -157,6 +193,41 @@ const PricingPlan: React.FC = () => {
             </Card>
           </Box>
         ))}
+      </Box>
+
+      {/* 比較表 */}
+      <Box sx={{ mb: 8, backgroundColor: '#fafafa', p: 4, border: '1px solid #e0e0e0' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, textAlign: 'center' }}>
+          機能比較表
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {[
+            { feature: 'プロンプト閲覧', guest: '20個', free: '20個', premium: '無制限' },
+            { feature: 'プロンプトコピー', guest: '不可', free: '無制限', premium: '無制限' },
+            { feature: 'お気に入り保存', guest: '不可', free: '50個', premium: '無制限' },
+            { feature: 'カスタムプロンプト作成', guest: '不可', free: '10個', premium: '無制限' },
+            { feature: 'フォルダ管理', guest: '不可', free: '不可', premium: '◯' },
+            { feature: 'AIニュース・記事', guest: '不可', free: '不可', premium: '◯' },
+            { feature: '統計機能', guest: '不可', free: '不可', premium: '◯' },
+          ].map((row, index) => (
+            <Box
+              key={index}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                gap: 2,
+                p: 2,
+                backgroundColor: '#fff',
+                borderLeft: '3px solid #000',
+              }}
+            >
+              <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{row.feature}</Typography>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', color: '#999' }}>{row.guest}</Typography>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem' }}>{row.free}</Typography>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 600 }}>{row.premium}</Typography>
+            </Box>
+          ))}
+        </Box>
       </Box>
 
       {/* FAQ */}
