@@ -319,8 +319,12 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
             sx={{
               backgroundColor: '#000',
               color: '#fff',
-              fontWeight: 600,
+              fontWeight: 700,
               borderRadius: 0,
+              fontSize: '1rem',
+              px: 2,
+              py: 2.5,
+              height: 'auto',
             }}
           />
         </Box>
@@ -578,8 +582,24 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
       </Box>
 
       {/* 検索結果の件数表示 */}
-      <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
-        {filteredPrompts.length}件のプロンプトが見つかりました
+      <Typography
+        variant="h6"
+        sx={{
+          mb: 3,
+          color: '#000',
+          fontWeight: 700,
+          fontSize: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <Box component="span" sx={{ color: '#000' }}>
+          {filteredPrompts.length}
+        </Box>
+        <Box component="span" sx={{ fontSize: '1rem', fontWeight: 600, color: '#666' }}>
+          件のプロンプトが見つかりました
+        </Box>
       </Typography>
 
       {/* プロンプト一覧 */}
