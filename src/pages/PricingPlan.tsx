@@ -164,10 +164,11 @@ const PricingPlan: React.FC = () => {
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
           gap: 3,
           mb: 8,
+          pt: 3, // RECOMMENDEDバッジの表示スペース確保
         }}
       >
         {plans.map((plan) => (
-          <Box key={plan.name}>
+          <Box key={plan.name} sx={{ position: 'relative' }}>
             <Card
               sx={{
                 border: plan.recommended ? '3px solid #000' : '1px solid #e0e0e0',
@@ -198,6 +199,8 @@ const PricingPlan: React.FC = () => {
                     fontWeight: 700,
                     fontSize: '0.85rem',
                     letterSpacing: 1,
+                    zIndex: 10, // 重なり順を最前面に
+                    whiteSpace: 'nowrap', // テキストの折り返しを防止
                   }}
                 >
                   RECOMMENDED
