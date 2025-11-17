@@ -22,6 +22,9 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
+    // ベースURLを取得（本番環境は固定ドメインを使用）
+    const baseUrl = 'https://library.oku-ai.co.jp';
+
     // Stripe Checkoutセッションを作成
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -32,8 +35,8 @@ export default async function handler(
           quantity: 1,
         },
       ],
-      success_url: `${process.env.VERCEL_URL || 'https://library.oku-ai.co.jp'}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.VERCEL_URL || 'https://library.oku-ai.co.jp'}/?payment=canceled`,
+      success_url: `${baseUrl}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/?payment=canceled`,
       customer_email: userEmail,
       client_reference_id: userId,
       metadata: {
