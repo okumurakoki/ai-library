@@ -22,6 +22,8 @@ interface PromptCardProps {
   prompt: Prompt;
   viewMode: 'grid' | 'list';
   isFavorite: boolean;
+  canCopy?: boolean;
+  canSave?: boolean;
   onToggleFavorite: (promptId: string) => void;
   onOpenDetail: (prompt: Prompt) => void;
   onAddToFolder?: (prompt: Prompt) => void;
@@ -32,6 +34,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
   prompt,
   viewMode,
   isFavorite,
+  canCopy = true,
+  canSave = true,
   onToggleFavorite,
   onOpenDetail,
   onAddToFolder,
@@ -145,17 +149,19 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {viewMode === 'grid' && (
           <Box sx={{ mt: 'auto', pt: 2 }}>
             <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-              <IconButton
-                size="small"
-                onClick={() => onToggleFavorite(prompt.id)}
-                sx={{
-                  color: isFavorite ? '#000' : '#666',
-                  '&:hover': { backgroundColor: '#f5f5f5' },
-                }}
-              >
-                {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-              </IconButton>
-              {onAddToFolder && (
+              {canSave && (
+                <IconButton
+                  size="small"
+                  onClick={() => onToggleFavorite(prompt.id)}
+                  sx={{
+                    color: isFavorite ? '#000' : '#666',
+                    '&:hover': { backgroundColor: '#f5f5f5' },
+                  }}
+                >
+                  {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </IconButton>
+              )}
+              {onAddToFolder && canSave && (
                 <IconButton
                   size="small"
                   onClick={() => onAddToFolder(prompt)}
@@ -168,25 +174,42 @@ const PromptCard: React.FC<PromptCardProps> = ({
                   <CreateNewFolderIcon />
                 </IconButton>
               )}
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
-                onClick={handleCopy}
-                sx={{
-                  borderRadius: 0,
-                  borderColor: '#000',
-                  color: '#000',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  '&:hover': {
+              {canCopy ? (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
+                  onClick={handleCopy}
+                  sx={{
+                    borderRadius: 0,
                     borderColor: '#000',
-                    backgroundColor: '#f5f5f5',
-                  },
-                }}
-              >
-                {copied ? 'コピー完了' : 'コピー'}
-              </Button>
+                    color: '#000',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    '&:hover': {
+                      borderColor: '#000',
+                      backgroundColor: '#f5f5f5',
+                    },
+                  }}
+                >
+                  {copied ? 'コピー完了' : 'コピー'}
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled
+                  sx={{
+                    borderRadius: 0,
+                    borderColor: '#ccc',
+                    color: '#999',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  ログインしてコピー
+                </Button>
+              )}
               <Button
                 variant="contained"
                 size="small"
@@ -246,17 +269,19 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {/* リスト表示時のアクションボタン */}
         {viewMode === 'list' && (
           <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-            <IconButton
-              size="small"
-              onClick={() => onToggleFavorite(prompt.id)}
-              sx={{
-                color: isFavorite ? '#000' : '#666',
-                '&:hover': { backgroundColor: '#f5f5f5' },
-              }}
-            >
-              {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-            </IconButton>
-            {onAddToFolder && (
+            {canSave && (
+              <IconButton
+                size="small"
+                onClick={() => onToggleFavorite(prompt.id)}
+                sx={{
+                  color: isFavorite ? '#000' : '#666',
+                  '&:hover': { backgroundColor: '#f5f5f5' },
+                }}
+              >
+                {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+              </IconButton>
+            )}
+            {onAddToFolder && canSave && (
               <IconButton
                 size="small"
                 onClick={() => onAddToFolder(prompt)}
@@ -269,25 +294,42 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 <CreateNewFolderIcon />
               </IconButton>
             )}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
-              onClick={handleCopy}
-              sx={{
-                borderRadius: 0,
-                borderColor: '#000',
-                color: '#000',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                '&:hover': {
+            {canCopy ? (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
+                onClick={handleCopy}
+                sx={{
+                  borderRadius: 0,
                   borderColor: '#000',
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            >
-              {copied ? 'コピー完了' : 'コピー'}
-            </Button>
+                  color: '#000',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': {
+                    borderColor: '#000',
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              >
+                {copied ? 'コピー完了' : 'コピー'}
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                size="small"
+                disabled
+                sx={{
+                  borderRadius: 0,
+                  borderColor: '#ccc',
+                  color: '#999',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                }}
+              >
+                ログインしてコピー
+              </Button>
+            )}
             <Button
               variant="contained"
               size="small"

@@ -30,6 +30,7 @@ import {
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import type { Prompt, FavoriteFolder } from '../types';
+import type { UserPermissions } from '../utils/userPermissions';
 import PromptCard from '../components/PromptCard';
 import PromptDetailDialog from '../components/PromptDetailDialog';
 import AddToFolderDialog from '../components/AddToFolderDialog';
@@ -58,6 +59,7 @@ interface PromptLibraryProps {
   favorites: string[];
   customPrompts: Prompt[];
   userPlan: 'free' | 'premium';
+  permissions: UserPermissions;
   onToggleFavorite: (promptId: string) => void;
   folders: FavoriteFolder[];
   onCreateFolder: (name: string) => void;
@@ -79,6 +81,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
   favorites,
   customPrompts,
   userPlan,
+  permissions,
   onToggleFavorite,
   folders,
   onCreateFolder: _onCreateFolder,
@@ -591,6 +594,8 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               prompt={prompt}
               viewMode="grid"
               isFavorite={favorites.includes(prompt.id)}
+              canCopy={permissions.canCopyPrompts}
+              canSave={permissions.canSaveFavorites}
               onToggleFavorite={onToggleFavorite}
               onOpenDetail={handleOpenDetail}
               onAddToFolder={(p) => {
@@ -609,6 +614,8 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               prompt={prompt}
               viewMode="list"
               isFavorite={favorites.includes(prompt.id)}
+              canCopy={permissions.canCopyPrompts}
+              canSave={permissions.canSaveFavorites}
               onToggleFavorite={onToggleFavorite}
               onOpenDetail={handleOpenDetail}
               onAddToFolder={(p) => {

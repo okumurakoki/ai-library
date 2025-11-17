@@ -12,6 +12,7 @@ import FavoriteFolderDialog from './components/FavoriteFolderDialog';
 import { SAMPLE_PROMPTS } from './data/prompts';
 import { useFavorites } from './hooks/useFavorites';
 import { usePromptHistory } from './hooks/usePromptHistory';
+import { getUserPermissions } from './utils/userPermissions';
 import type { FavoriteFolder, Prompt } from './types';
 
 // Material-UIテーマのカスタマイズ
@@ -89,9 +90,10 @@ function App() {
   const [customPrompts, setCustomPrompts] = useState<Prompt[]>([]);
   const [allPrompts, setAllPrompts] = useState([...SAMPLE_PROMPTS]);
 
-  // Clerkからユーザープランと管理者権限を取得
+  // ユーザー権限を取得
+  const permissions = getUserPermissions(user);
   const userPlan = (user?.publicMetadata?.plan as 'free' | 'premium') || 'free';
-  const isAdmin = user?.publicMetadata?.isAdmin === true;
+  const isAdmin = permissions.isAdmin;
 
   // カスタムプロンプトとサンプルプロンプトを統合
   useMemo(() => {
@@ -112,31 +114,37 @@ function App() {
 
   // 表示するプロンプトをフィルタリング
   const displayPrompts = useMemo(() => {
+    let prompts: Prompt[] = [];
+
     // お気に入りページ
     if (selectedPage === 'favorites') {
-      return allPrompts.filter((p) => favorites.includes(p.id));
+      prompts = allPrompts.filter((p) => favorites.includes(p.id));
     }
-
     // 作成したプロンプトページ
-    if (selectedPage === 'custom') {
-      return customPrompts;
+    else if (selectedPage === 'custom') {
+      prompts = customPrompts;
     }
-
     // フォルダが選択されている場合
-    if (selectedFolder) {
+    else if (selectedFolder) {
       const folder = favoriteFolders.find((f) => f.id === selectedFolder);
       if (folder) {
-        return allPrompts.filter((p) => folder.promptIds.includes(p.id));
+        prompts = allPrompts.filter((p) => folder.promptIds.includes(p.id));
       }
     }
-
     // ホームページ: サンプルプロンプトのみ（カスタムプロンプトを除外）
-    if (selectedPage === 'home') {
-      return SAMPLE_PROMPTS;
+    else if (selectedPage === 'home') {
+      prompts = SAMPLE_PROMPTS;
+    } else {
+      prompts = allPrompts;
     }
 
-    return allPrompts;
-  }, [selectedPage, favorites, selectedFolder, favoriteFolders, allPrompts, customPrompts]);
+    // 権限に応じて表示数を制限
+    if (permissions.maxVisiblePrompts !== null && selectedPage === 'home') {
+      return prompts.slice(0, permissions.maxVisiblePrompts);
+    }
+
+    return prompts;
+  }, [selectedPage, favorites, selectedFolder, favoriteFolders, allPrompts, customPrompts, permissions]);
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -311,6 +319,7 @@ function App() {
               favorites={favorites}
               customPrompts={customPrompts}
               userPlan={userPlan}
+              permissions={permissions}
               onToggleFavorite={toggleFavorite}
               folders={favoriteFolders}
               onCreateFolder={handleCreateFolder}
@@ -326,11 +335,15 @@ function App() {
             />
           )}
 
-          {selectedPage === 'articles' && <Articles />}
+          {selectedPage === 'articles' && (
+            permissions.canViewArticles ? <Articles /> : <PricingPlan />
+          )}
 
           {selectedPage === 'pricing' && <PricingPlan />}
 
-          {selectedPage === 'statistics' && <Statistics />}
+          {selectedPage === 'statistics' && (
+            permissions.canViewStatistics ? <Statistics /> : <PricingPlan />
+          )}
 
           {selectedPage === 'admin' && isAdmin && <AdminPanel />}
         </Box>
