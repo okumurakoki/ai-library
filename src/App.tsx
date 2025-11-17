@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useUser } from '@clerk/clerk-react';
@@ -9,6 +10,8 @@ import PricingPlan from './pages/PricingPlan';
 import AdminPanel from './pages/AdminPanel';
 import Statistics from './pages/Statistics';
 import PaymentSuccess from './pages/PaymentSuccess';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
 import FavoriteFolderDialog from './components/FavoriteFolderDialog';
 import { SAMPLE_PROMPTS } from './data/prompts';
 import { useFavorites } from './hooks/useFavorites';
@@ -80,6 +83,7 @@ const theme = createTheme({
 
 function App() {
   const { user, isLoaded } = useUser();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -94,6 +98,9 @@ function App() {
   // URLパラメータをチェックしてサンクスページを表示
   const urlParams = new URLSearchParams(window.location.search);
   const showPaymentSuccess = urlParams.get('payment') === 'success';
+
+  // サインイン・サインアップページかどうかをチェック
+  const isAuthPage = location.pathname === '/sign-in' || location.pathname === '/sign-up';
 
   // ユーザー権限を取得
   const permissions = getUserPermissions(user);
@@ -297,6 +304,32 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <PaymentSuccess />
+      </ThemeProvider>
+    );
+  }
+
+  // サインイン・サインアップページの場合はルーティングで表示
+  if (isAuthPage) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Routes>
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+        </Routes>
+      </ThemeProvider>
+    );
+  }
+
+  // ログインしていない場合はサインインページにリダイレクト
+  if (!user) {
+    window.location.href = '/sign-in';
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <Typography>リダイレクト中...</Typography>
+        </Box>
       </ThemeProvider>
     );
   }

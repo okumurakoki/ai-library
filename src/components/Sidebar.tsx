@@ -30,7 +30,7 @@ import {
   Create as CreateIcon,
   Login as LoginIcon,
 } from '@mui/icons-material';
-import { SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/clerk-react';
 import { getUserPermissions } from '../utils/userPermissions';
 import { CATEGORIES } from '../data/categories';
 import type { FavoriteFolder } from '../types';
@@ -561,42 +561,40 @@ const Sidebar: React.FC<SidebarProps> = ({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <SignInButton mode="modal">
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<LoginIcon />}
-                sx={{
-                  borderRadius: 0,
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<LoginIcon />}
+              onClick={() => window.location.href = '/sign-in'}
+              sx={{
+                borderRadius: 0,
+                borderColor: '#000',
+                color: '#000',
+                fontWeight: 600,
+                '&:hover': {
                   borderColor: '#000',
-                  color: '#000',
-                  fontWeight: 600,
-                  '&:hover': {
-                    borderColor: '#000',
-                    backgroundColor: '#f5f5f5',
-                  },
-                }}
-              >
-                ログイン
-              </Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button
-                variant="contained"
-                fullWidth
-                sx={{
-                  borderRadius: 0,
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: '#333',
-                  },
-                }}
-              >
-                新規登録
-              </Button>
-            </SignUpButton>
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
+              ログイン
+            </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => window.location.href = '/sign-up'}
+              sx={{
+                borderRadius: 0,
+                backgroundColor: '#000',
+                color: '#fff',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: '#333',
+                },
+              }}
+            >
+              新規登録
+            </Button>
           </Box>
         )}
       </Box>
