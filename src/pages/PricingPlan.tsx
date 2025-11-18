@@ -19,9 +19,39 @@ import { useUser } from '@clerk/clerk-react';
 const PricingPlan: React.FC = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   // ユーザーの現在のプラン
   const currentPlan = (user?.publicMetadata?.plan as string) || 'free';
+
+  // 手動でプランを同期
+  const handleSyncPlan = async () => {
+    if (!user) return;
+
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/sync-user-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`プランを同期しました: ${data.plan === 'standard' ? 'スタンダードプラン' : data.plan === 'premium' ? 'プレミアムプラン' : '無料プラン'}`);
+        // ページをリロードして反映
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(`同期に失敗しました: ${error.error || '不明なエラー'}`);
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      alert('同期中にエラーが発生しました');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const plans = [
     {
@@ -160,9 +190,28 @@ const PricingPlan: React.FC = () => {
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
           料金プラン
         </Typography>
-        <Typography variant="body1" sx={{ color: '#666', maxWidth: 600, mx: 'auto', lineHeight: 1.8 }}>
+        <Typography variant="body1" sx={{ color: '#666', maxWidth: 600, mx: 'auto', lineHeight: 1.8, mb: 2 }}>
           あなたに最適なプランを選んで、AIプロンプトライブラリを活用しましょう
         </Typography>
+        {user && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+              現在のプラン: <strong>{currentPlan === 'premium' ? 'プレミアムプラン' : currentPlan === 'standard' ? 'スタンダードプラン' : '無料プラン'}</strong>
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleSyncPlan}
+              disabled={syncing}
+              sx={{ mt: 1 }}
+            >
+              {syncing ? <CircularProgress size={20} /> : 'プランを手動で同期'}
+            </Button>
+            <Typography variant="caption" sx={{ display: 'block', color: '#999', mt: 1 }}>
+              ※支払い後にプランが反映されない場合は、このボタンをクリックしてください
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* プランカード */}
