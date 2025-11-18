@@ -26,8 +26,12 @@ const PricingPlan: React.FC = () => {
 
   // 手動でプランを同期
   const handleSyncPlan = async () => {
-    if (!user) return;
+    if (!user) {
+      alert('ユーザー情報が取得できません');
+      return;
+    }
 
+    console.log('Syncing plan for user:', user.id);
     setSyncing(true);
     try {
       const response = await fetch('/api/sync-user-plan', {
@@ -36,18 +40,20 @@ const PricingPlan: React.FC = () => {
         body: JSON.stringify({ userId: user.id }),
       });
 
+      console.log('Sync response status:', response.status);
+      const data = await response.json();
+      console.log('Sync response data:', data);
+
       if (response.ok) {
-        const data = await response.json();
-        alert(`プランを同期しました: ${data.plan === 'standard' ? 'スタンダードプラン' : data.plan === 'premium' ? 'プレミアムプラン' : '無料プラン'}`);
+        alert(`プランを同期しました:\n${data.message}\nプラン: ${data.plan === 'standard' ? 'スタンダードプラン' : data.plan === 'premium' ? 'プレミアムプラン' : '無料プラン'}`);
         // ページをリロードして反映
         window.location.reload();
       } else {
-        const error = await response.json();
-        alert(`同期に失敗しました: ${error.error || '不明なエラー'}`);
+        alert(`同期に失敗しました:\nステータス: ${response.status}\nエラー: ${data.error || '不明なエラー'}\nメッセージ: ${data.message || 'なし'}`);
       }
     } catch (error) {
       console.error('Sync error:', error);
-      alert('同期中にエラーが発生しました');
+      alert(`同期中にエラーが発生しました:\n${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setSyncing(false);
     }
