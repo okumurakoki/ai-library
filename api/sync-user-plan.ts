@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createClerkClient } from '@clerk/backend';
 
 // Clerkクライアントの初期化
+// Updated: 2025-11-19
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
