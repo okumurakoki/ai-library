@@ -72,7 +72,7 @@ const PricingPlan: React.FC = () => {
       priceId: null, // 無料プランなのでなし
     },
     {
-      name: 'スタンダードプラン',
+      name: 'スタンダードプラン（テスト）',
       planType: 'standard',
       price: '¥1,500',
       period: '/ 月',
@@ -89,7 +89,7 @@ const PricingPlan: React.FC = () => {
       ],
       recommended: true,
       color: '#000',
-      priceId: 'price_1SUYLXKnrmty0hAGakLAAHqk', // 本番用Price ID
+      priceId: 'price_1SUZ5JKnrmty0hAGbdGG4dcT', // テスト用Price ID
     },
     {
       name: 'プレミアムプラン',
@@ -110,7 +110,7 @@ const PricingPlan: React.FC = () => {
       ],
       recommended: false,
       color: '#000',
-      priceId: 'price_1SUYN8Knrmty0hAG7xWd5VQO', // 本番用Price ID
+      priceId: null, // テストでは無効
     },
   ];
 

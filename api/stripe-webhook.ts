@@ -72,8 +72,8 @@ export default async function handler(
           const priceId = subscription.items.data[0]?.price.id;
 
           // Price IDに応じてプランを判定
-          if (priceId === 'price_1SUYLXKnrmty0hAGakLAAHqk') {
-            // スタンダードプラン (¥1,500)
+          if (priceId === 'price_1SUYLXKnrmty0hAGakLAAHqk' || priceId === 'price_1SUZ5JKnrmty0hAGbdGG4dcT') {
+            // スタンダードプラン (¥1,500) - 本番 or テスト
             planType = 'standard';
             planName = 'standard';
           } else if (priceId === 'price_1SUYN8Knrmty0hAG7xWd5VQO') {
