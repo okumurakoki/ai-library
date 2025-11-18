@@ -410,13 +410,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             <ListItemButton
               onClick={async () => {
                 try {
+                  console.log('Fetching customer ID for user:', user.id);
                   const customerResponse = await fetch('/api/get-customer-id', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: user.id }),
                   });
 
+                  console.log('Customer response status:', customerResponse.status);
                   if (!customerResponse.ok) {
+                    const errorData = await customerResponse.json();
+                    console.error('Customer fetch error:', errorData);
                     alert('サブスクリプションが見つかりません。先に料金プランに登録してください。');
                     return;
                   }
