@@ -142,23 +142,25 @@ const PromptCard: React.FC<PromptCardProps> = ({
         </Typography>
 
         {/* タグ */}
-        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
-          {prompt.tags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
-              size="small"
-              variant="outlined"
-              sx={{
-                borderRadius: 0,
-                fontSize: '0.7rem',
-                borderColor: '#e0e0e0',
-                backgroundColor: '#fff',
-                mb: 0.5,
-              }}
-            />
-          ))}
-        </Stack>
+        {prompt.tags && prompt.tags.length > 0 && (
+          <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
+            {prompt.tags.map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderRadius: 0,
+                  fontSize: '0.7rem',
+                  borderColor: '#e0e0e0',
+                  backgroundColor: '#fff',
+                  mb: 0.5,
+                }}
+              />
+            ))}
+          </Stack>
+        )}
 
         {/* アクションボタン（グリッド表示時は下部に配置） */}
         {viewMode === 'grid' && (

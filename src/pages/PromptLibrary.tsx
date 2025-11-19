@@ -133,15 +133,17 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         if (p.useCase && p.useCase.includes(selectedUseCase)) {
           return true;
         }
-        return p.tags.includes(selectedUseCase);
+        return p.tags && p.tags.includes(selectedUseCase);
       });
     }
 
     // フィルタリングされたプロンプトからタグを集計
     relevantPrompts.forEach((prompt) => {
-      prompt.tags.forEach((tag) => {
-        tagCount.set(tag, (tagCount.get(tag) || 0) + 1);
-      });
+      if (prompt.tags) {
+        prompt.tags.forEach((tag) => {
+          tagCount.set(tag, (tagCount.get(tag) || 0) + 1);
+        });
+      }
     });
 
     // 使用頻度順にソート
@@ -167,7 +169,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
           return true;
         }
         // 後方互換: tagsにも含まれているかチェック（旧形式）
-        return p.tags.includes(selectedUseCase);
+        return p.tags && p.tags.includes(selectedUseCase);
       });
     }
 
@@ -176,12 +178,12 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
       if (tagSearchMode === 'AND') {
         // AND検索: すべてのタグを含む
         filtered = filtered.filter((p) =>
-          selectedTags.every((tag) => p.tags.includes(tag))
+          p.tags && selectedTags.every((tag) => p.tags.includes(tag))
         );
       } else {
         // OR検索: いずれかのタグを含む
         filtered = filtered.filter((p) =>
-          selectedTags.some((tag) => p.tags.includes(tag))
+          p.tags && selectedTags.some((tag) => p.tags.includes(tag))
         );
       }
     }
@@ -193,7 +195,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         (p) =>
           p.title.toLowerCase().includes(query) ||
           p.content.toLowerCase().includes(query) ||
-          p.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+          (p.tags && p.tags.some((tag) => tag.toLowerCase().includes(query))) ||
           (p.useCase && p.useCase.some((uc) => uc.toLowerCase().includes(query)))
       );
     }
