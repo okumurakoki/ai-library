@@ -192,27 +192,6 @@ const PricingPlan: React.FC = () => {
                 flexDirection: 'column',
               }}
             >
-              {plan.recommended && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -12,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: '#000',
-                    color: '#fff',
-                    px: 2,
-                    py: 0.25,
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
-                    letterSpacing: 0.5,
-                    zIndex: 10,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  RECOMMENDED
-                </Box>
-              )}
               <CardContent sx={{ p: 3, pb: 1.5, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography
                   variant="h6"
