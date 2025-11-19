@@ -31,6 +31,7 @@ export const useCustomPrompts = () => {
             content: p.content,
             category: p.category,
             tags: p.tags || [],
+            useCase: p.use_case || [],
             createdAt: p.created_at,
             updatedAt: p.updated_at,
           }));
@@ -54,6 +55,7 @@ export const useCustomPrompts = () => {
                   content: prompt.content,
                   category: prompt.category,
                   tags: prompt.tags,
+                  use_case: prompt.useCase || [],
                   is_public: false,
                 });
               }
@@ -67,6 +69,7 @@ export const useCustomPrompts = () => {
                   content: p.content,
                   category: p.category,
                   tags: p.tags || [],
+                  useCase: p.use_case || [],
                   createdAt: p.created_at,
                   updatedAt: p.updated_at,
                 }));
@@ -117,6 +120,7 @@ export const useCustomPrompts = () => {
         content: prompt.content,
         category: prompt.category,
         tags: prompt.tags,
+        use_case: prompt.useCase || [],
         is_public: false,
       });
 
@@ -128,6 +132,7 @@ export const useCustomPrompts = () => {
           content: created.content,
           category: created.category,
           tags: created.tags || [],
+          useCase: created.use_case || [],
           createdAt: created.created_at,
           updatedAt: created.updated_at,
         };
@@ -143,7 +148,15 @@ export const useCustomPrompts = () => {
   const updateCustomPrompt = async (promptId: string, updates: Partial<Prompt>) => {
     if (user) {
       // ログインユーザー：Supabaseで更新
-      const updated = await updateCustomPromptInSupabase(promptId, updates);
+      // camelCaseをsnake_caseに変換
+      const supabaseUpdates: any = {};
+      if (updates.title !== undefined) supabaseUpdates.title = updates.title;
+      if (updates.content !== undefined) supabaseUpdates.content = updates.content;
+      if (updates.category !== undefined) supabaseUpdates.category = updates.category;
+      if (updates.tags !== undefined) supabaseUpdates.tags = updates.tags;
+      if (updates.useCase !== undefined) supabaseUpdates.use_case = updates.useCase;
+
+      const updated = await updateCustomPromptInSupabase(promptId, supabaseUpdates);
       if (updated) {
         // Supabaseの形式をフロントエンドの形式に変換
         const promptForDisplay: Prompt = {
@@ -152,6 +165,7 @@ export const useCustomPrompts = () => {
           content: updated.content,
           category: updated.category,
           tags: updated.tags || [],
+          useCase: updated.use_case || [],
           createdAt: updated.created_at,
           updatedAt: updated.updated_at,
         };

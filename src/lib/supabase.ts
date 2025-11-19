@@ -352,6 +352,7 @@ export const createCustomPrompt = async (
     content: string;
     category: string;
     tags?: string[];
+    use_case?: string[];
     is_public?: boolean;
   }
 ) => {
@@ -364,6 +365,7 @@ export const createCustomPrompt = async (
       content: prompt.content,
       category: prompt.category,
       tags: prompt.tags || [],
+      use_case: prompt.use_case || [],
       is_public: prompt.is_public || false,
     })
     .select()
@@ -385,6 +387,7 @@ export const updateCustomPrompt = async (
     content?: string;
     category?: string;
     tags?: string[];
+    use_case?: string[];
     is_public?: boolean;
   }
 ) => {
