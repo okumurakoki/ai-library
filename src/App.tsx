@@ -166,7 +166,7 @@ function App() {
     // フォルダが選択されている場合
     else if (selectedFolder) {
       const folder = favoriteFolders.find((f) => f.id === selectedFolder);
-      if (folder) {
+      if (folder && Array.isArray(folder.promptIds)) {
         prompts = allPrompts.filter((p) => folder.promptIds.includes(p.id));
       }
     }
@@ -242,8 +242,9 @@ function App() {
   const handleAddToFolder = (folderId: string, promptId: string) => {
     const folder = favoriteFolders.find((f) => f.id === folderId);
     if (folder) {
+      const currentPromptIds = Array.isArray(folder.promptIds) ? folder.promptIds : [];
       updateFolder(folderId, {
-        promptIds: [...folder.promptIds, promptId],
+        promptIds: [...currentPromptIds, promptId],
         updatedAt: new Date().toISOString(),
       });
     }
@@ -251,7 +252,7 @@ function App() {
 
   const handleRemoveFromFolder = (folderId: string, promptId: string) => {
     const folder = favoriteFolders.find((f) => f.id === folderId);
-    if (folder) {
+    if (folder && Array.isArray(folder.promptIds)) {
       updateFolder(folderId, {
         promptIds: folder.promptIds.filter((id) => id !== promptId),
         updatedAt: new Date().toISOString(),

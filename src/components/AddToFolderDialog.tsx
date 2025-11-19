@@ -44,7 +44,7 @@ const AddToFolderDialog: React.FC<AddToFolderDialogProps> = ({
     if (prompt && open) {
       // 現在のプロンプトが含まれているフォルダを選択状態にする
       const folderIds = folders
-        .filter((folder) => folder.promptIds.includes(prompt.id))
+        .filter((folder) => Array.isArray(folder.promptIds) && folder.promptIds.includes(prompt.id))
         .map((folder) => folder.id);
       setSelectedFolders(folderIds);
     }
