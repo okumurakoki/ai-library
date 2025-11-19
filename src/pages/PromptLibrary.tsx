@@ -130,16 +130,16 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
     // 中分類: 用途カテゴリフィルター
     if (selectedUseCase !== 'all') {
       relevantPrompts = relevantPrompts.filter((p) => {
-        if (p.useCase && p.useCase.includes(selectedUseCase)) {
+        if (Array.isArray(p.useCase) && p.useCase.includes(selectedUseCase)) {
           return true;
         }
-        return p.tags && p.tags.includes(selectedUseCase);
+        return Array.isArray(p.tags) && p.tags.includes(selectedUseCase);
       });
     }
 
     // フィルタリングされたプロンプトからタグを集計
     relevantPrompts.forEach((prompt) => {
-      if (prompt.tags) {
+      if (Array.isArray(prompt.tags)) {
         prompt.tags.forEach((tag) => {
           tagCount.set(tag, (tagCount.get(tag) || 0) + 1);
         });
@@ -165,11 +165,11 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
     if (selectedUseCase !== 'all') {
       filtered = filtered.filter((p) => {
         // useCase配列に含まれているかチェック（新形式）
-        if (p.useCase && p.useCase.includes(selectedUseCase)) {
+        if (Array.isArray(p.useCase) && p.useCase.includes(selectedUseCase)) {
           return true;
         }
         // 後方互換: tagsにも含まれているかチェック（旧形式）
-        return p.tags && p.tags.includes(selectedUseCase);
+        return Array.isArray(p.tags) && p.tags.includes(selectedUseCase);
       });
     }
 
@@ -178,12 +178,12 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
       if (tagSearchMode === 'AND') {
         // AND検索: すべてのタグを含む
         filtered = filtered.filter((p) =>
-          p.tags && selectedTags.every((tag) => p.tags!.includes(tag))
+          Array.isArray(p.tags) && selectedTags.every((tag) => p.tags!.includes(tag))
         );
       } else {
         // OR検索: いずれかのタグを含む
         filtered = filtered.filter((p) =>
-          p.tags && selectedTags.some((tag) => p.tags!.includes(tag))
+          Array.isArray(p.tags) && selectedTags.some((tag) => p.tags!.includes(tag))
         );
       }
     }
@@ -195,8 +195,8 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         (p) =>
           p.title.toLowerCase().includes(query) ||
           p.content.toLowerCase().includes(query) ||
-          (p.tags && p.tags.some((tag) => tag.toLowerCase().includes(query))) ||
-          (p.useCase && p.useCase.some((uc) => uc.toLowerCase().includes(query)))
+          (Array.isArray(p.tags) && p.tags.some((tag) => tag.toLowerCase().includes(query))) ||
+          (Array.isArray(p.useCase) && p.useCase.some((uc) => uc.toLowerCase().includes(query)))
       );
     }
 
