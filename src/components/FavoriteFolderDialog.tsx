@@ -262,7 +262,7 @@ const FavoriteFolderDialog: React.FC<FavoriteFolderDialogProps> = ({
                       <FolderIcon sx={{ mr: 2, color: '#666' }} />
                       <ListItemText
                         primary={folder.name}
-                        secondary={`${folder.promptIds.length}件のプロンプト`}
+                        secondary={`${folder.promptIds?.length || 0}件のプロンプト`}
                       />
                       <ListItemSecondaryAction>
                         <IconButton
