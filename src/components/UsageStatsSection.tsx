@@ -12,7 +12,7 @@ import {
   Today as TodayIcon,
   CalendarMonth as CalendarMonthIcon,
 } from '@mui/icons-material';
-import { SAMPLE_PROMPTS } from '../data/prompts';
+import type { Prompt } from '../types';
 
 interface UsageStatsSectionProps {
   stats: {
@@ -22,12 +22,13 @@ interface UsageStatsSectionProps {
     mostUsedPrompts: { promptId: string; count: number }[];
     recentPrompts: string[];
   };
+  allPrompts: Prompt[];
 }
 
-const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ stats }) => {
+const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ stats, allPrompts }) => {
   // プロンプトIDから詳細情報を取得
   const getPromptTitle = (promptId: string) => {
-    const prompt = SAMPLE_PROMPTS.find((p) => p.id === promptId);
+    const prompt = allPrompts.find((p) => p.id === promptId);
     return prompt ? prompt.title : '不明なプロンプト';
   };
 

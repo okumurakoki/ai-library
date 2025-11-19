@@ -114,7 +114,7 @@ const Statistics: React.FC = () => {
       </Box>
 
       {/* 使用統計セクション */}
-      <UsageStatsSection stats={stats} />
+      <UsageStatsSection stats={stats} allPrompts={allPrompts} />
 
       {/* 使用推移グラフ（過去30日） */}
       <Card
