@@ -26,14 +26,19 @@ import {
 import { TrendingUp as TrendingUpIcon } from '@mui/icons-material';
 import UsageStatsSection from '../components/UsageStatsSection';
 import { usePromptHistory } from '../hooks/usePromptHistory';
+import { useCustomPrompts } from '../hooks/useCustomPrompts';
 import { SAMPLE_PROMPTS } from '../data/prompts';
 import { getCategoryName } from '../data/categories';
 
 const Statistics: React.FC = () => {
   const { stats, getAllHistory, getDailyStats } = usePromptHistory();
+  const { customPrompts } = useCustomPrompts();
   const [dailyStats, setDailyStats] = useState<{ date: string; copies: number }[]>([]);
   const [recentHistory, setRecentHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 全プロンプト（サンプル + カスタム）
+  const allPrompts = useMemo(() => [...SAMPLE_PROMPTS, ...customPrompts], [customPrompts]);
 
   // 日別統計データと使用履歴を非同期で読み込み
   useEffect(() => {
@@ -50,7 +55,7 @@ const Statistics: React.FC = () => {
           .sort((a, b) => b.timestamp - a.timestamp)
           .slice(0, 20)
           .map((item) => {
-            const prompt = SAMPLE_PROMPTS.find((p) => p.id === item.promptId);
+            const prompt = allPrompts.find((p) => p.id === item.promptId);
             const date = new Date(item.timestamp);
             return {
               ...item,
@@ -71,13 +76,13 @@ const Statistics: React.FC = () => {
     };
 
     loadStats();
-  }, [stats.totalCopies]); // stats が変わったら再読み込み
+  }, [stats.totalCopies, allPrompts]); // stats または allPrompts が変わったら再読み込み
 
   // プロンプトランキング（詳細情報付き）
   const promptRanking = useMemo(() => {
     return stats.mostUsedPrompts
       .map((item) => {
-        const prompt = SAMPLE_PROMPTS.find((p) => p.id === item.promptId);
+        const prompt = allPrompts.find((p) => p.id === item.promptId);
         return {
           ...item,
           title: prompt?.title || '不明なプロンプト',
@@ -86,7 +91,7 @@ const Statistics: React.FC = () => {
         };
       })
       .slice(0, 10);
-  }, [stats.mostUsedPrompts]);
+  }, [stats.mostUsedPrompts, allPrompts]);
 
   if (loading) {
     return (
