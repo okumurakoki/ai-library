@@ -45,6 +45,14 @@ const PricingPlan: React.FC = () => {
       console.log('Sync response data:', data);
 
       if (response.ok) {
+        // Clerkのセッションをリフレッシュ
+        try {
+          await user.reload();
+          console.log('Clerk session reloaded, new plan:', user.publicMetadata?.plan);
+        } catch (reloadError) {
+          console.error('Failed to reload Clerk session:', reloadError);
+        }
+
         alert(`プランを同期しました:\n${data.message}\nプラン: ${data.plan === 'standard' ? 'スタンダードプラン' : data.plan === 'premium' ? 'プレミアムプラン' : '無料プラン'}`);
         // ページをリロードして反映
         window.location.reload();

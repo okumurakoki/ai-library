@@ -50,6 +50,14 @@ const PaymentSuccess = () => {
             // 同期完了をマーク
             sessionStorage.setItem(syncKey, 'true');
 
+            // Clerkのセッションをリフレッシュ
+            try {
+              await user.reload();
+              console.log('Clerk session reloaded, new plan:', user.publicMetadata?.plan);
+            } catch (reloadError) {
+              console.error('Failed to reload Clerk session:', reloadError);
+            }
+
             // Clerkのキャッシュをリフレッシュするために少し待つ
             await new Promise(resolve => setTimeout(resolve, 1500));
 
