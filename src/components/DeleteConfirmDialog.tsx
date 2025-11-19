@@ -32,7 +32,7 @@ const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
       PaperProps={{
         sx: {
           borderRadius: 0,
-          border: '2px solid #d32f2f',
+          border: '1px solid #d32f2f',
         },
       }}
     >

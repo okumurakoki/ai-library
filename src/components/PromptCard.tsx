@@ -191,8 +191,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
                   </IconButton>
                 </>
               )}
-              {/* お気に入り・フォルダボタン（通常プロンプトのみ） */}
-              {!isCustomPrompt && canSave && (
+              {/* お気に入り・フォルダボタン */}
+              {canSave && (
                 <>
                   <IconButton
                     size="small"
@@ -201,6 +201,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                       color: isFavorite ? '#000' : '#666',
                       '&:hover': { backgroundColor: '#f5f5f5' },
                     }}
+                    title="お気に入り"
                   >
                     {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                   </IconButton>
@@ -358,8 +359,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 </IconButton>
               </>
             )}
-            {/* お気に入り・フォルダボタン（通常プロンプトのみ） */}
-            {!isCustomPrompt && canSave && (
+            {/* お気に入り・フォルダボタン */}
+            {canSave && (
               <>
                 <IconButton
                   size="small"
@@ -368,6 +369,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                     color: isFavorite ? '#000' : '#666',
                     '&:hover': { backgroundColor: '#f5f5f5' },
                   }}
+                  title="お気に入り"
                 >
                   {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                 </IconButton>
