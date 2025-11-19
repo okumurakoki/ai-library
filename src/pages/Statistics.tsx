@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -11,6 +11,7 @@ import {
   Chip,
   Card,
   CardContent,
+  CircularProgress,
 } from '@mui/material';
 import {
   LineChart,
@@ -30,9 +31,47 @@ import { getCategoryName } from '../data/categories';
 
 const Statistics: React.FC = () => {
   const { stats, getAllHistory, getDailyStats } = usePromptHistory();
+  const [dailyStats, setDailyStats] = useState<{ date: string; copies: number }[]>([]);
+  const [recentHistory, setRecentHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 日別統計データ（過去30日間）
-  const dailyStats = useMemo(() => getDailyStats(30), []);
+  // 日別統計データと使用履歴を非同期で読み込み
+  useEffect(() => {
+    const loadStats = async () => {
+      setLoading(true);
+      try {
+        // 日別統計を取得
+        const daily = await getDailyStats(30);
+        setDailyStats(daily);
+
+        // 最近の使用履歴を取得
+        const history = await getAllHistory();
+        const recent = history
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 20)
+          .map((item) => {
+            const prompt = SAMPLE_PROMPTS.find((p) => p.id === item.promptId);
+            const date = new Date(item.timestamp);
+            return {
+              ...item,
+              title: prompt?.title || '不明なプロンプト',
+              category: prompt?.category || 'unknown',
+              categoryName: prompt ? getCategoryName(prompt.category) : '不明',
+              dateStr: `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(
+                date.getMinutes()
+              ).padStart(2, '0')}`,
+            };
+          });
+        setRecentHistory(recent);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [stats.totalCopies]); // stats が変わったら再読み込み
 
   // プロンプトランキング（詳細情報付き）
   const promptRanking = useMemo(() => {
@@ -49,26 +88,13 @@ const Statistics: React.FC = () => {
       .slice(0, 10);
   }, [stats.mostUsedPrompts]);
 
-  // 最近の使用履歴（詳細情報付き）
-  const recentHistory = useMemo(() => {
-    const history = getAllHistory();
-    return history
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 20)
-      .map((item) => {
-        const prompt = SAMPLE_PROMPTS.find((p) => p.id === item.promptId);
-        const date = new Date(item.timestamp);
-        return {
-          ...item,
-          title: prompt?.title || '不明なプロンプト',
-          category: prompt?.category || 'unknown',
-          categoryName: prompt ? getCategoryName(prompt.category) : '不明',
-          dateStr: `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(
-            date.getMinutes()
-          ).padStart(2, '0')}`,
-        };
-      });
-  }, []);
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
