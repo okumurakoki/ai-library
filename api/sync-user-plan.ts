@@ -29,14 +29,15 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing user ID' });
     }
 
-    // Supabaseからサブスクリプション情報を取得
+    // Supabaseからサブスクリプション情報を取得（最新のものを取得）
     const { data, error } = await supabase
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1);
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       // サブスクリプションがない場合はfreeプランに設定
       await clerkClient.users.updateUserMetadata(userId, {
         publicMetadata: {
@@ -47,14 +48,15 @@ export default async function handler(
     }
 
     // サブスクリプションのステータスを確認
-    if (data.status === 'active') {
+    const subscription = data[0];
+    if (subscription.status === 'active') {
       // アクティブなサブスクリプションがある場合はClerkを更新
-      const planType = data.plan_type || 'premium';
+      const planType = subscription.plan_type || 'premium';
 
       await clerkClient.users.updateUserMetadata(userId, {
         publicMetadata: {
           plan: planType,
-          stripeCustomerId: data.stripe_customer_id,
+          stripeCustomerId: subscription.stripe_customer_id,
         },
       });
 
