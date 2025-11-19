@@ -102,7 +102,17 @@ export const useCustomPrompts = () => {
       });
 
       if (created) {
-        setCustomPrompts([...customPrompts, created]);
+        // Supabaseの形式をフロントエンドの形式に変換
+        const promptForDisplay: Prompt = {
+          id: created.id,
+          title: created.title,
+          content: created.content,
+          category: created.category,
+          tags: created.tags || [],
+          createdAt: created.created_at,
+          updatedAt: created.updated_at,
+        };
+        setCustomPrompts([...customPrompts, promptForDisplay]);
       }
     } else {
       // 非ログインユーザー：localStorageに保存
@@ -116,8 +126,18 @@ export const useCustomPrompts = () => {
       // ログインユーザー：Supabaseで更新
       const updated = await updateCustomPromptInSupabase(promptId, updates);
       if (updated) {
+        // Supabaseの形式をフロントエンドの形式に変換
+        const promptForDisplay: Prompt = {
+          id: updated.id,
+          title: updated.title,
+          content: updated.content,
+          category: updated.category,
+          tags: updated.tags || [],
+          createdAt: updated.created_at,
+          updatedAt: updated.updated_at,
+        };
         setCustomPrompts(
-          customPrompts.map((p) => (p.id === promptId ? { ...p, ...updated } : p))
+          customPrompts.map((p) => (p.id === promptId ? promptForDisplay : p))
         );
       }
     } else {

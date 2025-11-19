@@ -275,6 +275,12 @@ function App() {
 
   // カスタムプロンプト管理
   const handleCreateCustomPrompt = (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // 作成数制限チェック
+    if (permissions.maxCustomPrompts !== null && customPrompts.length >= permissions.maxCustomPrompts) {
+      alert(`カスタムプロンプトは${permissions.maxCustomPrompts}個までです。上位プランにアップグレードすると、より多く作成できます。`);
+      return;
+    }
+
     const newPrompt: Prompt = {
       ...promptData,
       id: `custom-${Date.now()}-${Math.random()}`,
