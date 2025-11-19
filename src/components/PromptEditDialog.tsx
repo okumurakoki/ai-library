@@ -66,7 +66,7 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       setContent(prompt.content);
       setCategory(prompt.category);
       setSelectedUseCases(prompt.useCase || []);
-      setTags(prompt.tags);
+      setTags(prompt.tags || []);
       setUsage(prompt.usage || '');
       setExample(prompt.example || '');
       setIsPremium(prompt.isPremium || false);

@@ -72,7 +72,7 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
       setContent(editingPrompt.content);
       setCategory(editingPrompt.category);
       setSelectedUseCases(editingPrompt.useCase || []);
-      setTags(editingPrompt.tags);
+      setTags(editingPrompt.tags || []);
       setUsage(editingPrompt.usage || '');
       setExample(editingPrompt.example || '');
     } else {

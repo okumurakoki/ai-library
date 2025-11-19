@@ -28,7 +28,7 @@ export const exportPromptsAsCSV = (prompts: Prompt[], filename: string = 'prompt
     `"${prompt.content.replace(/"/g, '""')}"`,
     prompt.category,
     prompt.useCase ? prompt.useCase.join(';') : '',
-    prompt.tags.join(';'),
+    prompt.tags ? prompt.tags.join(';') : '',
     prompt.usage ? `"${prompt.usage.replace(/"/g, '""')}"` : '',
     prompt.example ? `"${prompt.example.replace(/"/g, '""')}"` : '',
     prompt.isPremium ? 'Yes' : 'No',

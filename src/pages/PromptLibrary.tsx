@@ -178,12 +178,12 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
       if (tagSearchMode === 'AND') {
         // AND検索: すべてのタグを含む
         filtered = filtered.filter((p) =>
-          p.tags && selectedTags.every((tag) => p.tags.includes(tag))
+          p.tags && selectedTags.every((tag) => p.tags!.includes(tag))
         );
       } else {
         // OR検索: いずれかのタグを含む
         filtered = filtered.filter((p) =>
-          p.tags && selectedTags.some((tag) => p.tags.includes(tag))
+          p.tags && selectedTags.some((tag) => p.tags!.includes(tag))
         );
       }
     }

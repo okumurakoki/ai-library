@@ -45,9 +45,11 @@ export const useRecommendations = (
     // タグの集計
     const tagCount = new Map<string, number>();
     basePrompts.forEach(p => {
-      p.tags.forEach(tag => {
-        tagCount.set(tag, (tagCount.get(tag) || 0) + 1);
-      });
+      if (p.tags) {
+        p.tags.forEach(tag => {
+          tagCount.set(tag, (tagCount.get(tag) || 0) + 1);
+        });
+      }
     });
 
     // 用途の集計
@@ -78,13 +80,15 @@ export const useRecommendations = (
       // 2. タグマッチング（最大40点）
       let tagScore = 0;
       const matchedTags: string[] = [];
-      prompt.tags.forEach(tag => {
-        const count = tagCount.get(tag) || 0;
-        if (count > 0) {
-          tagScore += count * 5;
-          matchedTags.push(tag);
-        }
-      });
+      if (prompt.tags) {
+        prompt.tags.forEach(tag => {
+          const count = tagCount.get(tag) || 0;
+          if (count > 0) {
+            tagScore += count * 5;
+            matchedTags.push(tag);
+          }
+        });
+      }
       if (tagScore > 0) {
         score += Math.min(tagScore, 40);
         reasons.push(`タグ: ${matchedTags.slice(0, 2).join(', ')}`);
