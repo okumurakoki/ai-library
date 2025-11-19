@@ -14,6 +14,8 @@ import {
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
   CreateNewFolder as CreateNewFolderIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import type { Prompt } from '../types';
 import { getCategoryName } from '../data/categories';
@@ -24,10 +26,13 @@ interface PromptCardProps {
   isFavorite: boolean;
   canCopy?: boolean;
   canSave?: boolean;
+  isCustomPrompt?: boolean;
   onToggleFavorite: (promptId: string) => void;
   onOpenDetail: (prompt: Prompt) => void;
   onAddToFolder?: (prompt: Prompt) => void;
   onCopy: (promptId: string) => void;
+  onEdit?: (prompt: Prompt) => void;
+  onDelete?: (promptId: string) => void;
 }
 
 const PromptCard: React.FC<PromptCardProps> = ({
@@ -36,10 +41,13 @@ const PromptCard: React.FC<PromptCardProps> = ({
   isFavorite,
   canCopy = true,
   canSave = true,
+  isCustomPrompt = false,
   onToggleFavorite,
   onOpenDetail,
   onAddToFolder,
   onCopy,
+  onEdit,
+  onDelete,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -48,6 +56,12 @@ const PromptCard: React.FC<PromptCardProps> = ({
     setCopied(true);
     onCopy(prompt.id); // 使用履歴を記録
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('このプロンプトを削除してもよろしいですか？')) {
+      onDelete?.(prompt.id);
+    }
   };
 
   // プロンプト内の変数をハイライト表示
@@ -149,30 +163,59 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {viewMode === 'grid' && (
           <Box sx={{ mt: 'auto', pt: 2 }}>
             <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-              {canSave && (
-                <IconButton
-                  size="small"
-                  onClick={() => onToggleFavorite(prompt.id)}
-                  sx={{
-                    color: isFavorite ? '#000' : '#666',
-                    '&:hover': { backgroundColor: '#f5f5f5' },
-                  }}
-                >
-                  {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                </IconButton>
-              )}
-              {onAddToFolder && canSave && (
-                <IconButton
-                  size="small"
-                  onClick={() => onAddToFolder(prompt)}
-                  sx={{
-                    color: '#666',
-                    '&:hover': { backgroundColor: '#f5f5f5' },
-                  }}
-                  title="フォルダに追加"
-                >
-                  <CreateNewFolderIcon />
-                </IconButton>
+              {isCustomPrompt ? (
+                <>
+                  <IconButton
+                    size="small"
+                    onClick={() => onEdit?.(prompt)}
+                    sx={{
+                      color: '#666',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                    title="編集"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={handleDelete}
+                    sx={{
+                      color: '#d32f2f',
+                      '&:hover': { backgroundColor: '#ffebee' },
+                    }}
+                    title="削除"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </>
+              ) : (
+                <>
+                  {canSave && (
+                    <IconButton
+                      size="small"
+                      onClick={() => onToggleFavorite(prompt.id)}
+                      sx={{
+                        color: isFavorite ? '#000' : '#666',
+                        '&:hover': { backgroundColor: '#f5f5f5' },
+                      }}
+                    >
+                      {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                    </IconButton>
+                  )}
+                  {onAddToFolder && canSave && (
+                    <IconButton
+                      size="small"
+                      onClick={() => onAddToFolder(prompt)}
+                      sx={{
+                        color: '#666',
+                        '&:hover': { backgroundColor: '#f5f5f5' },
+                      }}
+                      title="フォルダに追加"
+                    >
+                      <CreateNewFolderIcon />
+                    </IconButton>
+                  )}
+                </>
               )}
               {canCopy ? (
                 <Button
@@ -286,30 +329,59 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {/* リスト表示時のアクションボタン */}
         {viewMode === 'list' && (
           <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-            {canSave && (
-              <IconButton
-                size="small"
-                onClick={() => onToggleFavorite(prompt.id)}
-                sx={{
-                  color: isFavorite ? '#000' : '#666',
-                  '&:hover': { backgroundColor: '#f5f5f5' },
-                }}
-              >
-                {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-              </IconButton>
-            )}
-            {onAddToFolder && canSave && (
-              <IconButton
-                size="small"
-                onClick={() => onAddToFolder(prompt)}
-                sx={{
-                  color: '#666',
-                  '&:hover': { backgroundColor: '#f5f5f5' },
-                }}
-                title="フォルダに追加"
-              >
-                <CreateNewFolderIcon />
-              </IconButton>
+            {isCustomPrompt ? (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={() => onEdit?.(prompt)}
+                  sx={{
+                    color: '#666',
+                    '&:hover': { backgroundColor: '#f5f5f5' },
+                  }}
+                  title="編集"
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={handleDelete}
+                  sx={{
+                    color: '#d32f2f',
+                    '&:hover': { backgroundColor: '#ffebee' },
+                  }}
+                  title="削除"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                {canSave && (
+                  <IconButton
+                    size="small"
+                    onClick={() => onToggleFavorite(prompt.id)}
+                    sx={{
+                      color: isFavorite ? '#000' : '#666',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                  >
+                    {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                  </IconButton>
+                )}
+                {onAddToFolder && canSave && (
+                  <IconButton
+                    size="small"
+                    onClick={() => onAddToFolder(prompt)}
+                    sx={{
+                      color: '#666',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                    title="フォルダに追加"
+                  >
+                    <CreateNewFolderIcon />
+                  </IconButton>
+                )}
+              </>
             )}
             {canCopy ? (
               <Button

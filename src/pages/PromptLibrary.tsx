@@ -624,6 +624,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               isFavorite={favorites.includes(prompt.id)}
               canCopy={permissions.canCopyPrompts}
               canSave={permissions.canSaveFavorites}
+              isCustomPrompt={selectedPage === 'custom'}
               onToggleFavorite={onToggleFavorite}
               onOpenDetail={handleOpenDetail}
               onAddToFolder={(p) => {
@@ -631,6 +632,11 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 setAddToFolderDialogOpen(true);
               }}
               onCopy={onPromptCopy}
+              onEdit={(p) => {
+                setEditingPrompt(p);
+                setCustomPromptDialogOpen(true);
+              }}
+              onDelete={_onDeleteCustomPrompt}
             />
           ))}
         </Box>
@@ -644,6 +650,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               isFavorite={favorites.includes(prompt.id)}
               canCopy={permissions.canCopyPrompts}
               canSave={permissions.canSaveFavorites}
+              isCustomPrompt={selectedPage === 'custom'}
               onToggleFavorite={onToggleFavorite}
               onOpenDetail={handleOpenDetail}
               onAddToFolder={(p) => {
@@ -651,6 +658,11 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 setAddToFolderDialogOpen(true);
               }}
               onCopy={onPromptCopy}
+              onEdit={(p) => {
+                setEditingPrompt(p);
+                setCustomPromptDialogOpen(true);
+              }}
+              onDelete={_onDeleteCustomPrompt}
             />
           ))}
         </Box>
