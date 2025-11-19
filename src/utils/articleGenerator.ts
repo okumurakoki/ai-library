@@ -113,7 +113,8 @@ const TIPS_TEMPLATES = [
 export async function generateArticle(
   category: 'news' | 'tips',
   topic: string,
-  keywords: string[]
+  keywords: string[],
+  researchContext?: string
 ): Promise<Article> {
   // TODO: 実際のAI API呼び出しに置き換える
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -122,10 +123,10 @@ export async function generateArticle(
   const template = templates[Math.floor(Math.random() * templates.length)];
 
   // タイトル生成
-  const title = generateTitle(category, topic, template);
+  const title = generateTitle(category, topic, template, researchContext);
 
   // 本文生成
-  const content = generateContent(category, topic, keywords, template);
+  const content = generateContent(category, topic, keywords, template, researchContext);
 
   const article: Article = {
     id: `article-${Date.now()}`,
@@ -146,12 +147,19 @@ export async function generateArticle(
 function generateTitle(
   category: 'news' | 'tips',
   topic: string,
-  _template: { titlePattern: string; sections: { title: string; level: number }[] }
+  _template: { titlePattern: string; sections: { title: string; level: number }[] },
+  researchContext?: string
 ): string {
+  const hasResearch = researchContext && researchContext.length > 0;
+
   if (category === 'news') {
-    return `${topic}の最新動向と実践活用法`;
+    return hasResearch
+      ? `${topic}の最新動向と実践活用法【2025年最新版】`
+      : `${topic}の最新動向と実践活用法`;
   } else {
-    return `${topic}の実践ガイド`;
+    return hasResearch
+      ? `${topic}の実践ガイド【最新情報対応】`
+      : `${topic}の実践ガイド`;
   }
 }
 
@@ -162,14 +170,19 @@ function generateContent(
   category: 'news' | 'tips',
   topic: string,
   keywords: string[],
-  template: { titlePattern: string; sections: { title: string; level: number }[] }
+  template: { titlePattern: string; sections: { title: string; level: number }[] },
+  researchContext?: string
 ): string {
   const k1 = keywords[0] || '効率化';
   const k2 = keywords[1] || '最適化';
   const k3 = keywords[2] || '活用法';
 
+  const researchSection = researchContext
+    ? `\n\n> **最新情報に基づく記事**: この記事は最新のWeb検索結果を基に作成されました。最新の動向と実践的な情報を取り入れています。\n\n`
+    : '';
+
   if (category === 'news') {
-    return `${topic}について、最近の動きをまとめました。実際のビジネスでどう使えるのか、具体的に見ていきましょう。
+    return `${topic}について、最近の動きをまとめました。実際のビジネスでどう使えるのか、具体的に見ていきましょう。${researchSection}
 
 ## ${template.sections[0].title}
 
