@@ -219,7 +219,7 @@ function App() {
   // フォルダ管理関数
   const handleCreateFolder = (name: string) => {
     const newFolder: FavoriteFolder = {
-      id: `folder-${Date.now()}`,
+      id: crypto.randomUUID(),
       name,
       promptIds: [],
       createdAt: new Date().toISOString(),
@@ -281,9 +281,12 @@ function App() {
       return;
     }
 
+    // UUID v4形式のIDを生成
+    const uuid = crypto.randomUUID();
+
     const newPrompt: Prompt = {
       ...promptData,
-      id: `custom-${Date.now()}-${Math.random()}`,
+      id: uuid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
