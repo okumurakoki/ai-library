@@ -19,53 +19,9 @@ import { useUser } from '@clerk/clerk-react';
 const PricingPlan: React.FC = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
 
   // ユーザーの現在のプラン
   const currentPlan = (user?.publicMetadata?.plan as string) || 'free';
-
-  // 手動でプランを同期
-  const handleSyncPlan = async () => {
-    if (!user) {
-      alert('ユーザー情報が取得できません');
-      return;
-    }
-
-    console.log('Syncing plan for user:', user.id);
-    setSyncing(true);
-    try {
-      const response = await fetch('/api/sync-user-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
-      });
-
-      console.log('Sync response status:', response.status);
-      const data = await response.json();
-      console.log('Sync response data:', data);
-
-      if (response.ok) {
-        // Clerkのセッションをリフレッシュ
-        try {
-          await user.reload();
-          console.log('Clerk session reloaded, new plan:', user.publicMetadata?.plan);
-        } catch (reloadError) {
-          console.error('Failed to reload Clerk session:', reloadError);
-        }
-
-        alert(`プランを同期しました:\n${data.message}\nプラン: ${data.plan === 'standard' ? 'スタンダードプラン' : data.plan === 'premium' ? 'プレミアムプラン' : '無料プラン'}`);
-        // ページをリロードして反映
-        window.location.reload();
-      } else {
-        alert(`同期に失敗しました:\nステータス: ${response.status}\nエラー: ${data.error || '不明なエラー'}\nメッセージ: ${data.message || 'なし'}`);
-      }
-    } catch (error) {
-      console.error('Sync error:', error);
-      alert(`同期中にエラーが発生しました:\n${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const plans = [
     {
@@ -208,23 +164,9 @@ const PricingPlan: React.FC = () => {
           あなたに最適なプランを選んで、AIプロンプトライブラリを活用しましょう
         </Typography>
         {user && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-              現在のプラン: <strong>{currentPlan === 'premium' ? 'プレミアムプラン' : currentPlan === 'standard' ? 'スタンダードプラン' : '無料プラン'}</strong>
-            </Typography>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleSyncPlan}
-              disabled={syncing}
-              sx={{ mt: 1 }}
-            >
-              {syncing ? <CircularProgress size={20} /> : 'プランを手動で同期'}
-            </Button>
-            <Typography variant="caption" sx={{ display: 'block', color: '#999', mt: 1 }}>
-              ※支払い後にプランが反映されない場合は、このボタンをクリックしてください
-            </Typography>
-          </Box>
+          <Typography variant="body2" sx={{ color: '#666', mt: 2 }}>
+            現在のプラン: <strong>{currentPlan === 'premium' ? 'プレミアムプラン' : currentPlan === 'standard' ? 'スタンダードプラン' : '無料プラン'}</strong>
+          </Typography>
         )}
       </Box>
 
@@ -233,92 +175,86 @@ const PricingPlan: React.FC = () => {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 3,
-          mb: 8,
-          pt: 3, // RECOMMENDEDバッジの表示スペース確保
+          gap: 2.5,
+          mb: 6,
+          pt: 2,
         }}
       >
         {plans.map((plan) => (
           <Box key={plan.name} sx={{ position: 'relative' }}>
             <Card
               sx={{
-                border: plan.recommended ? '3px solid #000' : '1px solid #e0e0e0',
+                border: plan.recommended ? '2px solid #000' : '1px solid #e0e0e0',
                 borderRadius: 0,
                 position: 'relative',
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                transform: plan.recommended ? 'scale(1.05)' : 'scale(1)',
-                '&:hover': {
-                  transform: plan.recommended ? 'scale(1.07)' : 'scale(1.02)',
-                  boxShadow: plan.recommended ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.1)',
-                },
-                transition: 'all 0.3s ease',
               }}
             >
               {plan.recommended && (
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: -16,
+                    top: -12,
                     left: '50%',
                     transform: 'translateX(-50%)',
                     backgroundColor: '#000',
                     color: '#fff',
-                    px: 3,
-                    py: 0.5,
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    letterSpacing: 1,
-                    zIndex: 10, // 重なり順を最前面に
-                    whiteSpace: 'nowrap', // テキストの折り返しを防止
+                    px: 2,
+                    py: 0.25,
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    letterSpacing: 0.5,
+                    zIndex: 10,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   RECOMMENDED
                 </Box>
               )}
-              <CardContent sx={{ p: 4, pb: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ p: 3, pb: 1.5, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, mb: 0.5, color: plan.color }}
+                  variant="h6"
+                  sx={{ fontWeight: 700, mb: 0.5, color: plan.color, fontSize: '1.1rem' }}
                 >
                   {plan.name}
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ color: '#666', mb: 3, minHeight: 40 }}
+                  sx={{ color: '#666', mb: 2, fontSize: '0.85rem' }}
                 >
                   {plan.description}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2.5 }}>
                   <Typography
-                    variant="h3"
-                    sx={{ fontWeight: 700, fontSize: { xs: '2.2rem', sm: '2.8rem' }, color: plan.color }}
+                    variant="h4"
+                    sx={{ fontWeight: 700, fontSize: '2rem', color: plan.color }}
                   >
                     {plan.price}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#666', ml: 1 }}>
+                  <Typography variant="body2" sx={{ color: '#666', ml: 0.5, fontSize: '0.85rem' }}>
                     {plan.period}
                   </Typography>
                 </Box>
                 <List sx={{ mb: 'auto' }}>
                   {plan.features.map((feature, index) => (
-                    <ListItem key={index} sx={{ px: 0, py: 0.75 }}>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <CheckIcon sx={{ color: plan.color, fontSize: '1.2rem' }} />
+                    <ListItem key={index} sx={{ px: 0, py: 0.5 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <CheckIcon sx={{ color: plan.color, fontSize: '1rem' }} />
                       </ListItemIcon>
                       <ListItemText
                         primary={feature}
                         primaryTypographyProps={{
-                          fontSize: '0.875rem',
-                          lineHeight: 1.6,
+                          fontSize: '0.8rem',
+                          lineHeight: 1.5,
                         }}
                       />
                     </ListItem>
                   ))}
                 </List>
               </CardContent>
-              <Box sx={{ p: 4, pt: 2 }}>
+              <Box sx={{ p: 3, pt: 1.5 }}>
                 <Button
                   variant={plan.recommended ? 'contained' : 'outlined'}
                   fullWidth
@@ -329,10 +265,9 @@ const PricingPlan: React.FC = () => {
                     backgroundColor: plan.recommended ? '#000' : 'transparent',
                     borderColor: plan.color,
                     color: plan.recommended ? '#fff' : plan.color,
-                    fontWeight: 700,
-                    py: 1.5,
-                    fontSize: '0.95rem',
-                    letterSpacing: 0.5,
+                    fontWeight: 600,
+                    py: 1.2,
+                    fontSize: '0.9rem',
                     '&:hover': {
                       backgroundColor: plan.recommended ? '#333' : 'rgba(0,0,0,0.05)',
                       borderColor: plan.color,

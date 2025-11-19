@@ -24,7 +24,17 @@ export const useCustomPrompts = () => {
         // ログインユーザー：Supabaseから取得
         try {
           const supabasePrompts = await fetchCustomPrompts(user.id);
-          setCustomPrompts(supabasePrompts);
+          // Supabaseの形式をフロントエンドの形式に変換
+          const promptsForDisplay: Prompt[] = supabasePrompts.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            content: p.content,
+            category: p.category,
+            tags: p.tags || [],
+            createdAt: p.created_at,
+            updatedAt: p.updated_at,
+          }));
+          setCustomPrompts(promptsForDisplay);
 
           // localStorageのデータをSupabaseに移行（初回のみ）
           const stored = localStorage.getItem(CUSTOM_PROMPTS_KEY);
@@ -51,7 +61,16 @@ export const useCustomPrompts = () => {
               if (toMigrate.length > 0) {
                 // 移行後、再取得
                 const updated = await fetchCustomPrompts(user.id);
-                setCustomPrompts(updated);
+                const updatedForDisplay: Prompt[] = updated.map((p: any) => ({
+                  id: p.id,
+                  title: p.title,
+                  content: p.content,
+                  category: p.category,
+                  tags: p.tags || [],
+                  createdAt: p.created_at,
+                  updatedAt: p.updated_at,
+                }));
+                setCustomPrompts(updatedForDisplay);
               }
 
               // 移行完了後、localStorageをクリア
