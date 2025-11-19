@@ -330,7 +330,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={folder.name}
-                        secondary={`${folder.promptIds.length}件`}
+                        secondary={`${folder.promptIds?.length || 0}件`}
                         primaryTypographyProps={{
                           variant: 'body2',
                           sx: { fontSize: '0.875rem' }
