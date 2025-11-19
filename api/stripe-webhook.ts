@@ -38,6 +38,10 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  console.log('===== WEBHOOK HANDLER CALLED =====');
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -45,10 +49,15 @@ export default async function handler(
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
 
+  console.log('Signature present:', !!sig);
+  console.log('Buffer length:', buf.length);
+
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
+    console.log('Webhook signature verified successfully');
+    console.log('Event type:', event.type);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -56,6 +65,7 @@ export default async function handler(
 
   // イベントタイプに応じて処理
   try {
+    console.log('Processing event type:', event.type);
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
