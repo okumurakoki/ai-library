@@ -251,10 +251,9 @@ const Articles: React.FC = () => {
                 height: '100%',
                 cursor: 'pointer',
                 '&:hover': {
-                  border: '2px solid #000',
-                  boxShadow: '4px 4px 0 rgba(0,0,0,0.1)',
+                  borderColor: '#000',
                 },
-                transition: 'all 0.2s',
+                transition: 'border-color 0.15s',
               }}
             >
               <CardActionArea onClick={() => handleOpenArticle(article)}>
