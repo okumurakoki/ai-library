@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -15,13 +15,15 @@ import {
   DialogActions,
   Button,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   Close as CloseIcon,
 } from '@mui/icons-material';
+import { fetchArticles } from '../lib/supabase';
 import type { Article } from '../types';
 
-// サンプル記事データ
+// サンプル記事データ（フォールバック用）
 const SAMPLE_ARTICLES: Article[] = [
   {
     id: 'article-001',
@@ -133,11 +135,36 @@ const Articles: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'news' | 'tips'>('all');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Supabaseから記事を取得
+  useEffect(() => {
+    const loadArticles = async () => {
+      setLoading(true);
+      try {
+        const fetchedArticles = await fetchArticles();
+        if (fetchedArticles && fetchedArticles.length > 0) {
+          setArticles(fetchedArticles);
+        } else {
+          // Supabaseに記事がない場合はサンプル記事を使用
+          setArticles(SAMPLE_ARTICLES);
+        }
+      } catch (error) {
+        console.error('Error loading articles:', error);
+        setArticles(SAMPLE_ARTICLES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadArticles();
+  }, []);
 
   const filteredArticles =
     categoryFilter === 'all'
-      ? SAMPLE_ARTICLES
-      : SAMPLE_ARTICLES.filter((a) => a.category === categoryFilter);
+      ? articles
+      : articles.filter((a) => a.category === categoryFilter);
 
   const handleOpenArticle = (article: Article) => {
     setSelectedArticle(article);
@@ -148,6 +175,15 @@ const Articles: React.FC = () => {
     setDialogOpen(false);
     setSelectedArticle(null);
   };
+
+  // ローディング中の表示
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
