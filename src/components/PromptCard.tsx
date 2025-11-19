@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import type { Prompt } from '../types';
 import { getCategoryName } from '../data/categories';
+import DeleteConfirmDialog from './DeleteConfirmDialog';
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -50,6 +51,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
   onDelete,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt.content);
@@ -59,9 +61,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
   };
 
   const handleDelete = () => {
-    if (window.confirm('このプロンプトを削除してもよろしいですか？')) {
-      onDelete?.(prompt.id);
-    }
+    onDelete?.(prompt.id);
   };
 
   // プロンプト内の変数をハイライト表示
@@ -88,6 +88,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
   };
 
   return (
+    <>
     <Card
       sx={{
         border: '1px solid #e0e0e0',
@@ -163,7 +164,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {viewMode === 'grid' && (
           <Box sx={{ mt: 'auto', pt: 2 }}>
             <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-              {isCustomPrompt ? (
+              {/* 編集・削除ボタン（カスタムプロンプトのみ） */}
+              {isCustomPrompt && (
                 <>
                   <IconButton
                     size="small"
@@ -178,7 +180,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={handleDelete}
+                    onClick={() => setDeleteDialogOpen(true)}
                     sx={{
                       color: '#d32f2f',
                       '&:hover': { backgroundColor: '#ffebee' },
@@ -188,21 +190,21 @@ const PromptCard: React.FC<PromptCardProps> = ({
                     <DeleteIcon />
                   </IconButton>
                 </>
-              ) : (
+              )}
+              {/* お気に入り・フォルダボタン（通常プロンプトのみ） */}
+              {!isCustomPrompt && canSave && (
                 <>
-                  {canSave && (
-                    <IconButton
-                      size="small"
-                      onClick={() => onToggleFavorite(prompt.id)}
-                      sx={{
-                        color: isFavorite ? '#000' : '#666',
-                        '&:hover': { backgroundColor: '#f5f5f5' },
-                      }}
-                    >
-                      {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                    </IconButton>
-                  )}
-                  {onAddToFolder && canSave && (
+                  <IconButton
+                    size="small"
+                    onClick={() => onToggleFavorite(prompt.id)}
+                    sx={{
+                      color: isFavorite ? '#000' : '#666',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                  >
+                    {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                  </IconButton>
+                  {onAddToFolder && (
                     <IconButton
                       size="small"
                       onClick={() => onAddToFolder(prompt)}
@@ -329,7 +331,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
         {/* リスト表示時のアクションボタン */}
         {viewMode === 'list' && (
           <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
-            {isCustomPrompt ? (
+            {/* 編集・削除ボタン（カスタムプロンプトのみ） */}
+            {isCustomPrompt && (
               <>
                 <IconButton
                   size="small"
@@ -344,7 +347,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 </IconButton>
                 <IconButton
                   size="small"
-                  onClick={handleDelete}
+                  onClick={() => setDeleteDialogOpen(true)}
                   sx={{
                     color: '#d32f2f',
                     '&:hover': { backgroundColor: '#ffebee' },
@@ -354,21 +357,21 @@ const PromptCard: React.FC<PromptCardProps> = ({
                   <DeleteIcon />
                 </IconButton>
               </>
-            ) : (
+            )}
+            {/* お気に入り・フォルダボタン（通常プロンプトのみ） */}
+            {!isCustomPrompt && canSave && (
               <>
-                {canSave && (
-                  <IconButton
-                    size="small"
-                    onClick={() => onToggleFavorite(prompt.id)}
-                    sx={{
-                      color: isFavorite ? '#000' : '#666',
-                      '&:hover': { backgroundColor: '#f5f5f5' },
-                    }}
-                  >
-                    {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                  </IconButton>
-                )}
-                {onAddToFolder && canSave && (
+                <IconButton
+                  size="small"
+                  onClick={() => onToggleFavorite(prompt.id)}
+                  sx={{
+                    color: isFavorite ? '#000' : '#666',
+                    '&:hover': { backgroundColor: '#f5f5f5' },
+                  }}
+                >
+                  {isFavorite ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </IconButton>
+                {onAddToFolder && (
                   <IconButton
                     size="small"
                     onClick={() => onAddToFolder(prompt)}
@@ -460,6 +463,15 @@ const PromptCard: React.FC<PromptCardProps> = ({
         )}
       </Box>
     </Card>
+
+    {/* 削除確認ダイアログ */}
+    <DeleteConfirmDialog
+      open={deleteDialogOpen}
+      title={prompt.title}
+      onClose={() => setDeleteDialogOpen(false)}
+      onConfirm={handleDelete}
+    />
+    </>
   );
 };
 
