@@ -20,7 +20,11 @@ export const fetchPrompts = async () => {
   return data;
 };
 
-// Supabaseから記事を取得
+// =============================================
+// 記事機能
+// =============================================
+
+// 公開記事を取得
 export const fetchArticles = async () => {
   const { data, error } = await supabase
     .from('articles')
@@ -34,6 +38,93 @@ export const fetchArticles = async () => {
   }
 
   return data;
+};
+
+// 全記事を取得（管理者用）
+export const fetchAllArticles = async () => {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all articles:', error);
+    return [];
+  }
+
+  return data;
+};
+
+// 記事を作成
+export const createArticle = async (article: {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  category: string;
+  tags?: string[];
+  author?: string;
+  thumbnail_url?: string;
+  is_published?: boolean;
+  published_at?: string;
+}) => {
+  const { data, error } = await supabase
+    .from('articles')
+    .insert(article)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating article:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// 記事を更新
+export const updateArticle = async (
+  articleId: string,
+  updates: {
+    title?: string;
+    content?: string;
+    excerpt?: string;
+    category?: string;
+    tags?: string[];
+    author?: string;
+    thumbnail_url?: string;
+    is_published?: boolean;
+    published_at?: string;
+  }
+) => {
+  const { data, error } = await supabase
+    .from('articles')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', articleId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating article:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// 記事を削除
+export const deleteArticle = async (articleId: string) => {
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .eq('id', articleId);
+
+  if (error) {
+    console.error('Error deleting article:', error);
+    return false;
+  }
+
+  return true;
 };
 
 // ユーザーのサブスクリプション情報を取得
@@ -61,6 +152,125 @@ export const logPromptCopy = async (userId: string, promptId: string) => {
   if (error) {
     console.error('Error logging copy:', error);
   }
+};
+
+// =============================================
+// 統計機能
+// =============================================
+
+// プロンプトコピー数を取得（期間指定可能）
+export const getPromptCopyStats = async (startDate?: Date, endDate?: Date) => {
+  let query = supabase
+    .from('copy_logs')
+    .select('prompt_id, created_at');
+
+  if (startDate) {
+    query = query.gte('created_at', startDate.toISOString());
+  }
+  if (endDate) {
+    query = query.lte('created_at', endDate.toISOString());
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching copy stats:', error);
+    return [];
+  }
+
+  return data;
+};
+
+// 人気プロンプトランキングを取得
+export const getPopularPrompts = async (limit: number = 10) => {
+  const { data, error } = await supabase
+    .from('copy_logs')
+    .select('prompt_id')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching popular prompts:', error);
+    return [];
+  }
+
+  // プロンプトIDごとにカウント
+  const counts: { [key: string]: number } = {};
+  data.forEach((log: any) => {
+    counts[log.prompt_id] = (counts[log.prompt_id] || 0) + 1;
+  });
+
+  // ソートして上位を返す
+  return Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, limit)
+    .map(([promptId, count]) => ({ promptId, count }));
+};
+
+// ユーザーのアクティビティを取得
+export const getUserActivity = async (userId: string) => {
+  // お気に入り数
+  const { data: favorites, error: favError } = await supabase
+    .from('user_favorites')
+    .select('id')
+    .eq('user_id', userId);
+
+  // カスタムプロンプト数
+  const { data: customPrompts, error: customError } = await supabase
+    .from('custom_prompts')
+    .select('id')
+    .eq('user_id', userId);
+
+  // コピー数
+  const { data: copies, error: copyError } = await supabase
+    .from('copy_logs')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (favError || customError || copyError) {
+    console.error('Error fetching user activity');
+    return { favorites: 0, customPrompts: 0, copies: 0 };
+  }
+
+  return {
+    favorites: favorites?.length || 0,
+    customPrompts: customPrompts?.length || 0,
+    copies: copies?.length || 0,
+  };
+};
+
+// 全体統計を取得
+export const getOverallStats = async () => {
+  // ユニークユーザー数（お気に入りを持っているユーザー）
+  const { data: uniqueUsers } = await supabase
+    .from('user_favorites')
+    .select('user_id');
+
+  const activeUsers = uniqueUsers
+    ? new Set(uniqueUsers.map((u: any) => u.user_id)).size
+    : 0;
+
+  // 総コピー数
+  const { count: totalCopies } = await supabase
+    .from('copy_logs')
+    .select('*', { count: 'exact', head: true });
+
+  // 総記事数
+  const { count: totalArticles } = await supabase
+    .from('articles')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_published', true);
+
+  // 総カスタムプロンプト数
+  const { count: totalCustomPrompts } = await supabase
+    .from('custom_prompts')
+    .select('*', { count: 'exact', head: true });
+
+  return {
+    activeUsers,
+    totalCopies: totalCopies || 0,
+    totalArticles: totalArticles || 0,
+    totalCustomPrompts: totalCustomPrompts || 0,
+  };
 };
 
 // =============================================
