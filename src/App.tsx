@@ -15,6 +15,8 @@ import SignUpPage from './pages/SignUpPage';
 import FavoriteFolderDialog from './components/FavoriteFolderDialog';
 import { SAMPLE_PROMPTS } from './data/prompts';
 import { useFavorites } from './hooks/useFavorites';
+import { useCustomPrompts } from './hooks/useCustomPrompts';
+import { useFolders } from './hooks/useFolders';
 import { usePromptHistory } from './hooks/usePromptHistory';
 import { getUserPermissions } from './utils/userPermissions';
 import type { FavoriteFolder, Prompt } from './types';
@@ -88,11 +90,11 @@ function App() {
   const [selectedPage, setSelectedPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { favorites, toggleFavorite: originalToggleFavorite } = useFavorites();
+  const { customPrompts, addCustomPrompt, updateCustomPrompt, deleteCustomPrompt } = useCustomPrompts();
+  const { folders: favoriteFolders, addFolder, updateFolder, deleteFolder } = useFolders();
   const { recordPromptUse } = usePromptHistory();
-  const [favoriteFolders, setFavoriteFolders] = useState<FavoriteFolder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
-  const [customPrompts, setCustomPrompts] = useState<Prompt[]>([]);
   const [allPrompts, setAllPrompts] = useState([...SAMPLE_PROMPTS]);
 
   // URLパラメータをチェックしてサンクスページを表示
@@ -223,49 +225,38 @@ function App() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setFavoriteFolders([...favoriteFolders, newFolder]);
+    addFolder(newFolder);
   };
 
   const handleDeleteFolder = (folderId: string) => {
-    setFavoriteFolders(favoriteFolders.filter((f) => f.id !== folderId));
+    deleteFolder(folderId);
   };
 
   const handleRenameFolder = (folderId: string, newName: string) => {
-    setFavoriteFolders(
-      favoriteFolders.map((f) =>
-        f.id === folderId
-          ? { ...f, name: newName, updatedAt: new Date().toISOString() }
-          : f
-      )
-    );
+    updateFolder(folderId, {
+      name: newName,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const handleAddToFolder = (folderId: string, promptId: string) => {
-    setFavoriteFolders(
-      favoriteFolders.map((f) =>
-        f.id === folderId
-          ? {
-              ...f,
-              promptIds: [...f.promptIds, promptId],
-              updatedAt: new Date().toISOString(),
-            }
-          : f
-      )
-    );
+    const folder = favoriteFolders.find((f) => f.id === folderId);
+    if (folder) {
+      updateFolder(folderId, {
+        promptIds: [...folder.promptIds, promptId],
+        updatedAt: new Date().toISOString(),
+      });
+    }
   };
 
   const handleRemoveFromFolder = (folderId: string, promptId: string) => {
-    setFavoriteFolders(
-      favoriteFolders.map((f) =>
-        f.id === folderId
-          ? {
-              ...f,
-              promptIds: f.promptIds.filter((id) => id !== promptId),
-              updatedAt: new Date().toISOString(),
-            }
-          : f
-      )
-    );
+    const folder = favoriteFolders.find((f) => f.id === folderId);
+    if (folder) {
+      updateFolder(folderId, {
+        promptIds: folder.promptIds.filter((id) => id !== promptId),
+        updatedAt: new Date().toISOString(),
+      });
+    }
   };
 
   const handleImportPrompts = (importedPrompts: import('./types').Prompt[]) => {
@@ -290,25 +281,18 @@ function App() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setCustomPrompts([...customPrompts, newPrompt]);
+    addCustomPrompt(newPrompt);
   };
 
   const handleUpdateCustomPrompt = (promptId: string, promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setCustomPrompts(
-      customPrompts.map((p) =>
-        p.id === promptId
-          ? {
-              ...p,
-              ...promptData,
-              updatedAt: new Date().toISOString(),
-            }
-          : p
-      )
-    );
+    updateCustomPrompt(promptId, {
+      ...promptData,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const handleDeleteCustomPrompt = (promptId: string) => {
-    setCustomPrompts(customPrompts.filter((p) => p.id !== promptId));
+    deleteCustomPrompt(promptId);
   };
 
   // ローディング中の表示
