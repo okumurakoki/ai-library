@@ -30,8 +30,8 @@ export const useCustomPrompts = () => {
             title: p.title,
             content: p.content,
             category: p.category,
-            tags: p.tags || [],
-            useCase: p.use_case || [],
+            tags: Array.isArray(p.tags) ? p.tags : [],
+            useCase: Array.isArray(p.use_case) ? p.use_case : [],
             createdAt: p.created_at,
             updatedAt: p.updated_at,
           }));
@@ -68,8 +68,8 @@ export const useCustomPrompts = () => {
                   title: p.title,
                   content: p.content,
                   category: p.category,
-                  tags: p.tags || [],
-                  useCase: p.use_case || [],
+                  tags: Array.isArray(p.tags) ? p.tags : [],
+                  useCase: Array.isArray(p.use_case) ? p.use_case : [],
                   createdAt: p.created_at,
                   updatedAt: p.updated_at,
                 }));
@@ -131,8 +131,8 @@ export const useCustomPrompts = () => {
           title: created.title,
           content: created.content,
           category: created.category,
-          tags: created.tags || [],
-          useCase: created.use_case || [],
+          tags: Array.isArray(created.tags) ? created.tags : [],
+          useCase: Array.isArray(created.use_case) ? created.use_case : [],
           createdAt: created.created_at,
           updatedAt: created.updated_at,
         };
@@ -164,8 +164,8 @@ export const useCustomPrompts = () => {
           title: updated.title,
           content: updated.content,
           category: updated.category,
-          tags: updated.tags || [],
-          useCase: updated.use_case || [],
+          tags: Array.isArray(updated.tags) ? updated.tags : [],
+          useCase: Array.isArray(updated.use_case) ? updated.use_case : [],
           createdAt: updated.created_at,
           updatedAt: updated.updated_at,
         };

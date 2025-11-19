@@ -5,7 +5,7 @@ export interface Prompt {
   content: string;
   category: string; // 大分類（業種）
   useCase?: string[]; // 中分類（用途カテゴリ）
-  tags: string[]; // 小分類（詳細タグ）
+  tags?: string[]; // 小分類（詳細タグ）
   usage?: string;
   example?: string;
   isPremium?: boolean;
