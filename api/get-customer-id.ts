@@ -23,18 +23,19 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing user ID' });
     }
 
-    // Supabaseからstripe_customer_idを取得
+    // Supabaseからstripe_customer_idを取得（最新のものを取得）
     const { data, error } = await supabase
       .from('user_subscriptions')
       .select('stripe_customer_id')
       .eq('user_id', userId)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1);
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    return res.status(200).json({ customerId: data.stripe_customer_id });
+    return res.status(200).json({ customerId: data[0].stripe_customer_id });
   } catch (error: any) {
     console.error('Get customer ID error:', error);
     return res.status(500).json({ error: error.message });

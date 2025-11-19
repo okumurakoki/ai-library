@@ -142,14 +142,15 @@ export default async function handler(
         const subscription = event.data.object;
         const customerId = subscription.customer;
 
-        // カスタマーIDからユーザーを検索
-        const { data: userSub } = await supabase
+        // カスタマーIDからユーザーを検索（最新のものを取得）
+        const { data: userSubs } = await supabase
           .from('user_subscriptions')
           .select('*')
           .eq('stripe_customer_id', customerId)
-          .single();
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-        if (userSub) {
+        if (userSubs && userSubs.length > 0) {
           await supabase
             .from('user_subscriptions')
             .update({
@@ -178,22 +179,23 @@ export default async function handler(
           })
           .eq('stripe_customer_id', customerId);
 
-        // ユーザーIDを取得
-        const { data: userSub } = await supabase
+        // ユーザーIDを取得（最新のものを取得）
+        const { data: userSubs } = await supabase
           .from('user_subscriptions')
           .select('user_id')
           .eq('stripe_customer_id', customerId)
-          .single();
+          .order('created_at', { ascending: false })
+          .limit(1);
 
         // Clerkのユーザーメタデータを更新（freeプランにダウングレード）
-        if (userSub?.user_id) {
+        if (userSubs && userSubs.length > 0 && userSubs[0].user_id) {
           try {
-            await clerkClient.users.updateUserMetadata(userSub.user_id, {
+            await clerkClient.users.updateUserMetadata(userSubs[0].user_id, {
               publicMetadata: {
                 plan: 'free',
               },
             });
-            console.log('Clerk metadata downgraded to free for user:', userSub.user_id);
+            console.log('Clerk metadata downgraded to free for user:', userSubs[0].user_id);
           } catch (error) {
             console.error('Failed to update Clerk metadata:', error);
           }
