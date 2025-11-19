@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import {
   Button,
   TextField,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -40,6 +41,12 @@ import PromptGeneratorDialog from '../components/PromptGeneratorDialog';
 import ArticleGeneratorDialog from '../components/ArticleGeneratorDialog';
 import PromptEditDialog from '../components/PromptEditDialog';
 import ArticleEditDialog from '../components/ArticleEditDialog';
+import {
+  fetchAllArticles,
+  createArticle,
+  updateArticle,
+  deleteArticle as deleteArticleFromSupabase,
+} from '../lib/supabase';
 
 // サンプル記事データ
 const SAMPLE_ARTICLES: Article[] = [
@@ -166,16 +173,67 @@ const AdminPanel: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [prompts, setPrompts] = useState<Prompt[]>(SAMPLE_PROMPTS);
-  const [articles, setArticles] = useState<Article[]>(SAMPLE_ARTICLES);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(true);
+
+  // Supabaseから記事を取得
+  useEffect(() => {
+    const loadArticles = async () => {
+      setArticlesLoading(true);
+      try {
+        const fetchedArticles = await fetchAllArticles();
+        if (fetchedArticles && fetchedArticles.length > 0) {
+          setArticles(fetchedArticles);
+        } else {
+          // Supabaseに記事がない場合はサンプル記事を使用
+          setArticles(SAMPLE_ARTICLES);
+        }
+      } catch (error) {
+        console.error('Error loading articles:', error);
+        setArticles(SAMPLE_ARTICLES);
+      } finally {
+        setArticlesLoading(false);
+      }
+    };
+
+    loadArticles();
+  }, []);
 
   const handleGeneratePrompts = (newPrompts: Prompt[]) => {
     setPrompts([...prompts, ...newPrompts]);
     alert(`${newPrompts.length}件のプロンプトを追加しました`);
   };
 
-  const handleGenerateArticle = (newArticle: Article) => {
-    setArticles([newArticle, ...articles]);
-    alert('記事を追加しました');
+  const handleGenerateArticle = async (newArticle: Article) => {
+    try {
+      const created = await createArticle({
+        id: newArticle.id,
+        title: newArticle.title,
+        content: newArticle.content,
+        excerpt: newArticle.excerpt,
+        category: newArticle.category,
+        tags: newArticle.tags,
+        author: newArticle.author,
+        thumbnail_url: newArticle.thumbnailUrl,
+        is_published: newArticle.isPublished || false,
+        published_at: newArticle.publishedAt,
+      });
+
+      if (created) {
+        // Supabaseの形式をフロントエンドの形式に変換
+        const articleForDisplay: Article = {
+          ...created,
+          isPublished: created.is_published,
+          publishedAt: created.published_at,
+          thumbnailUrl: created.thumbnail_url,
+        };
+        setArticles([articleForDisplay, ...articles]);
+        alert('記事をSupabaseに保存しました');
+      }
+    } catch (error) {
+      console.error('Error creating article:', error);
+      alert('記事の保存に失敗しました');
+    }
   };
 
   const handleEditPrompt = (prompt: Prompt) => {
@@ -203,17 +261,46 @@ const AdminPanel: React.FC = () => {
     alert('プロンプトを削除しました');
   };
 
-  const handleToggleArticlePublish = (articleId: string) => {
-    setArticles(
-      articles.map((a) =>
-        a.id === articleId ? { ...a, isPublished: !a.isPublished } : a
-      )
-    );
+  const handleToggleArticlePublish = async (articleId: string) => {
+    const article = articles.find((a) => a.id === articleId);
+    if (!article) return;
+
+    try {
+      const updated = await updateArticle(articleId, {
+        is_published: !article.isPublished,
+        published_at: !article.isPublished ? new Date().toISOString() : article.publishedAt,
+      });
+
+      if (updated) {
+        setArticles(
+          articles.map((a) =>
+            a.id === articleId
+              ? {
+                  ...a,
+                  isPublished: updated.is_published,
+                  publishedAt: updated.published_at,
+                }
+              : a
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling article publish status:', error);
+      alert('公開状態の変更に失敗しました');
+    }
   };
 
-  const handleDeleteArticle = (articleId: string) => {
-    setArticles(articles.filter((a) => a.id !== articleId));
-    alert('記事を削除しました');
+  const handleDeleteArticle = async (articleId: string) => {
+    try {
+      const success = await deleteArticleFromSupabase(articleId);
+      if (success) {
+        setArticles(articles.filter((a) => a.id !== articleId));
+        alert('記事を削除しました');
+      }
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      alert('記事の削除に失敗しました');
+    }
   };
 
   const handleEditArticle = (article: Article) => {
@@ -221,18 +308,65 @@ const AdminPanel: React.FC = () => {
     setEditArticleDialogOpen(true);
   };
 
-  const handleSaveArticle = (updatedArticle: Article) => {
+  const handleSaveArticle = async (updatedArticle: Article) => {
     const existingIndex = articles.findIndex((a) => a.id === updatedArticle.id);
-    if (existingIndex >= 0) {
-      // 編集
-      const newArticles = [...articles];
-      newArticles[existingIndex] = updatedArticle;
-      setArticles(newArticles);
-      alert('記事を更新しました');
-    } else {
-      // 新規作成
-      setArticles([updatedArticle, ...articles]);
-      alert('記事を作成しました');
+
+    try {
+      if (existingIndex >= 0) {
+        // 編集
+        const updated = await updateArticle(updatedArticle.id, {
+          title: updatedArticle.title,
+          content: updatedArticle.content,
+          excerpt: updatedArticle.excerpt,
+          category: updatedArticle.category,
+          tags: updatedArticle.tags,
+          author: updatedArticle.author,
+          thumbnail_url: updatedArticle.thumbnailUrl,
+          is_published: updatedArticle.isPublished,
+          published_at: updatedArticle.publishedAt,
+        });
+
+        if (updated) {
+          const articleForDisplay: Article = {
+            ...updated,
+            isPublished: updated.is_published,
+            publishedAt: updated.published_at,
+            thumbnailUrl: updated.thumbnail_url,
+          };
+          const newArticles = [...articles];
+          newArticles[existingIndex] = articleForDisplay;
+          setArticles(newArticles);
+          alert('記事を更新しました');
+        }
+      } else {
+        // 新規作成
+        const created = await createArticle({
+          id: updatedArticle.id,
+          title: updatedArticle.title,
+          content: updatedArticle.content,
+          excerpt: updatedArticle.excerpt,
+          category: updatedArticle.category,
+          tags: updatedArticle.tags,
+          author: updatedArticle.author,
+          thumbnail_url: updatedArticle.thumbnailUrl,
+          is_published: updatedArticle.isPublished || false,
+          published_at: updatedArticle.publishedAt,
+        });
+
+        if (created) {
+          const articleForDisplay: Article = {
+            ...created,
+            isPublished: created.is_published,
+            publishedAt: created.published_at,
+            thumbnailUrl: created.thumbnail_url,
+          };
+          setArticles([articleForDisplay, ...articles]);
+          alert('記事を作成しました');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving article:', error);
+      alert('記事の保存に失敗しました');
     }
   };
 
@@ -641,11 +775,17 @@ const AdminPanel: React.FC = () => {
       {/* 記事管理タブ */}
       {selectedTab === 2 && (
         <Box sx={{ px: 2 }}>
-          {/* ヘッダーと新規作成ボタン */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              記事一覧
-            </Typography>
+          {articlesLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              {/* ヘッダーと新規作成ボタン */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  記事一覧
+                </Typography>
             <Button
               variant="contained"
               onClick={() => setArticleGeneratorDialogOpen(true)}
@@ -850,6 +990,8 @@ const AdminPanel: React.FC = () => {
             onSave={handleSaveArticle}
             onDelete={handleDeleteArticle}
           />
+            </>
+          )}
         </Box>
       )}
     </Box>

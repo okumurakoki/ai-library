@@ -18,10 +18,13 @@ export interface Article {
   id: string;
   title: string;
   content: string;
+  excerpt?: string;
   category: 'news' | 'tips';
-  author: string;
+  tags?: string[];
+  author?: string;
   publishedAt: string;
   thumbnail?: string;
+  thumbnailUrl?: string;
   isPublished: boolean;
   createdAt?: string;
   updatedAt?: string;

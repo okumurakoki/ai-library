@@ -48,7 +48,7 @@ const ArticleEditDialog: React.FC<ArticleEditDialogProps> = ({
       setTitle(article.title);
       setContent(article.content);
       setCategory(article.category);
-      setAuthor(article.author);
+      setAuthor(article.author || '');
       setThumbnail(article.thumbnail || '');
       setIsPublished(article.isPublished);
     } else {
