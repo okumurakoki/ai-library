@@ -167,22 +167,24 @@ const PromptDetailDialog: React.FC<PromptDetailDialogProps> = ({
 
       <DialogContent sx={{ p: 3, maxHeight: '70vh', overflowY: 'auto' }}>
         {/* タグ */}
-        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mt: 1, mb: 2 }}>
-          {prompt.tags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
-              size="small"
-              variant="outlined"
-              sx={{
-                borderRadius: 0,
-                fontSize: '0.7rem',
-                borderColor: '#e0e0e0',
-                mb: 0.5,
-              }}
-            />
-          ))}
-        </Stack>
+        {prompt.tags && prompt.tags.length > 0 && (
+          <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mt: 1, mb: 2 }}>
+            {prompt.tags.map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderRadius: 0,
+                  fontSize: '0.7rem',
+                  borderColor: '#e0e0e0',
+                  mb: 0.5,
+                }}
+              />
+            ))}
+          </Stack>
+        )}
 
         {/* 変数入力セクション */}
         {variables.length > 0 && (
