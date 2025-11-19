@@ -63,6 +63,11 @@ export default async function handler(
         const customerId = session.customer;
         const subscriptionId = session.subscription;
 
+        console.log('=== CHECKOUT SESSION COMPLETED ===');
+        console.log('User ID:', userId);
+        console.log('Customer ID:', customerId);
+        console.log('Subscription ID:', subscriptionId);
+
         // サブスクリプション詳細を取得してPrice IDを確認
         let planType = 'premium';
         let planName = 'premium';
@@ -86,7 +91,8 @@ export default async function handler(
         }
 
         // Supabaseにサブスクリプション情報を保存
-        await supabase.from('user_subscriptions').upsert({
+        console.log('Saving to Supabase...');
+        const { data: supabaseData, error: supabaseError } = await supabase.from('user_subscriptions').upsert({
           user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
@@ -96,9 +102,16 @@ export default async function handler(
           updated_at: new Date().toISOString(),
         });
 
+        if (supabaseError) {
+          console.error('Supabase error:', supabaseError);
+        } else {
+          console.log('Supabase save successful:', supabaseData);
+        }
+
         // Clerkのユーザーメタデータを更新
         if (userId) {
           try {
+            console.log('Updating Clerk metadata...');
             await clerkClient.users.updateUserMetadata(userId, {
               publicMetadata: {
                 plan: planName,
