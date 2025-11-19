@@ -19,6 +19,7 @@ import {
 import { Close as CloseIcon, Add as AddIcon } from '@mui/icons-material';
 import { CATEGORIES } from '../data/categories';
 import type { Prompt } from '../types';
+import type { UserPermissions } from '../utils/userPermissions';
 
 interface CustomPromptDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ interface CustomPromptDialogProps {
   editingPrompt?: Prompt | null;
   currentPromptCount?: number;
   userPlan?: 'free' | 'premium';
+  permissions?: UserPermissions;
 }
 
 const USE_CASES = [
@@ -47,6 +49,7 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
   editingPrompt,
   currentPromptCount = 0,
   userPlan = 'free',
+  permissions,
 }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -58,14 +61,9 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
   const [example, setExample] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // プラン別の上限
-  const PLAN_LIMITS = {
-    free: 10,
-    premium: 100,
-  };
-
-  const promptLimit = PLAN_LIMITS[userPlan];
-  const isAtLimit = !editingPrompt && currentPromptCount >= promptLimit;
+  // プラン別の上限（permissionsから取得、なければデフォルト値）
+  const promptLimit = permissions?.maxCustomPrompts ?? (userPlan === 'premium' ? 150 : 10);
+  const isAtLimit = !editingPrompt && promptLimit !== null && currentPromptCount >= promptLimit;
 
   // 編集モード時に値をセット
   useEffect(() => {
@@ -190,11 +188,11 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
           >
             {editingPrompt
               ? '編集中のプロンプト'
-              : `作成可能数: ${currentPromptCount}/${promptLimit}件 (${userPlan === 'free' ? 'フリープラン' : 'プレミアムプラン'})`}
+              : `作成可能数: ${currentPromptCount}/${promptLimit === null ? '無制限' : promptLimit}件 (${userPlan === 'free' ? 'フリープラン' : 'プレミアムプラン'})`}
           </Typography>
           {isAtLimit && (
             <Typography variant="caption" sx={{ color: '#c62828', mt: 0.5, display: 'block' }}>
-              プロンプトの作成上限に達しています。プレミアムプランにアップグレードすると100件まで作成できます。
+              プロンプトの作成上限に達しています。プレミアムプランにアップグレードするとより多く作成できます。
             </Typography>
           )}
         </Box>

@@ -721,6 +721,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         editingPrompt={editingPrompt}
         currentPromptCount={customPrompts.length}
         userPlan={userPlan}
+        permissions={permissions}
       />
 
       {/* 検索履歴ポップオーバー */}
