@@ -20,6 +20,10 @@ import {
 import {
   Close as CloseIcon,
   Add as AddIcon,
+  CheckBox as CheckBoxIcon,
+  CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
 } from '@mui/icons-material';
 import { CATEGORIES } from '../data/categories';
 import type { Prompt } from '../types';
@@ -42,6 +46,7 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
   const [generating, setGenerating] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<Prompt[]>([]);
   const [error, setError] = useState('');
+  const [selectedPrompts, setSelectedPrompts] = useState<Set<string>>(new Set());
 
   const handleGenerate = async () => {
     if (!category || !businessContext) {
@@ -73,7 +78,42 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
     setCount(5);
     setGeneratedPrompts([]);
     setError('');
+    setSelectedPrompts(new Set());
     onClose();
+  };
+
+  const togglePromptPremium = (promptId: string) => {
+    setGeneratedPrompts(prompts =>
+      prompts.map(p =>
+        p.id === promptId ? { ...p, isPremium: !p.isPremium } : p
+      )
+    );
+  };
+
+  const toggleSelectPrompt = (promptId: string) => {
+    const newSelected = new Set(selectedPrompts);
+    if (newSelected.has(promptId)) {
+      newSelected.delete(promptId);
+    } else {
+      newSelected.add(promptId);
+    }
+    setSelectedPrompts(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPrompts.size === generatedPrompts.length) {
+      setSelectedPrompts(new Set());
+    } else {
+      setSelectedPrompts(new Set(generatedPrompts.map(p => p.id)));
+    }
+  };
+
+  const bulkSetPremium = (isPremium: boolean) => {
+    setGeneratedPrompts(prompts =>
+      prompts.map(p =>
+        selectedPrompts.has(p.id) ? { ...p, isPremium } : p
+      )
+    );
   };
 
   return (
@@ -200,7 +240,7 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
           </Box>
         ) : (
           <Box>
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {generatedPrompts.length}件のプロンプトを生成しました
               </Typography>
@@ -209,6 +249,62 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                 size="small"
                 sx={{ backgroundColor: '#f0f0f0', borderRadius: 0 }}
               />
+              {selectedPrompts.size > 0 && (
+                <>
+                  <Chip
+                    label={`${selectedPrompts.size}件選択中`}
+                    size="small"
+                    sx={{ backgroundColor: '#e3f2fd', borderRadius: 0 }}
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => bulkSetPremium(true)}
+                    sx={{
+                      borderColor: '#000',
+                      color: '#000',
+                      borderRadius: 0,
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    プレミアムに設定
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => bulkSetPremium(false)}
+                    sx={{
+                      borderColor: '#666',
+                      color: '#666',
+                      borderRadius: 0,
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    無料に設定
+                  </Button>
+                </>
+              )}
+            </Box>
+
+            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                size="small"
+                onClick={toggleSelectAll}
+                sx={{ p: 0.5 }}
+              >
+                {selectedPrompts.size === generatedPrompts.length ?
+                  <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />
+                }
+              </IconButton>
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
+                すべて選択
+              </Typography>
             </Box>
 
             <Box
@@ -234,6 +330,16 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleSelectPrompt(prompt.id)}
+                        sx={{ p: 0.5 }}
+                      >
+                        {selectedPrompts.has(prompt.id) ?
+                          <CheckBoxIcon sx={{ fontSize: '1.2rem' }} /> :
+                          <CheckBoxOutlineBlankIcon sx={{ fontSize: '1.2rem' }} />
+                        }
+                      </IconButton>
                       <Typography variant="subtitle2" sx={{ fontWeight: 700, flex: 1 }}>
                         {index + 1}. {prompt.title}
                       </Typography>
@@ -248,18 +354,17 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                           fontWeight: 600,
                         }}
                       />
-                      {prompt.isPremium && (
-                        <Chip
-                          label="プレミアム"
-                          size="small"
-                          sx={{
-                            backgroundColor: '#000',
-                            color: '#fff',
-                            borderRadius: 0,
-                            fontSize: '0.7rem',
-                          }}
-                        />
-                      )}
+                      <IconButton
+                        size="small"
+                        onClick={() => togglePromptPremium(prompt.id)}
+                        sx={{
+                          p: 0.5,
+                          color: prompt.isPremium ? '#000' : '#ccc',
+                        }}
+                        title={prompt.isPremium ? 'プレミアム' : '無料'}
+                      >
+                        {prompt.isPremium ? <StarIcon /> : <StarBorderIcon />}
+                      </IconButton>
                     </Box>
                     <Typography
                       variant="body2"

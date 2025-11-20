@@ -163,8 +163,8 @@ const Articles: React.FC = () => {
 
   const filteredArticles =
     categoryFilter === 'all'
-      ? articles
-      : articles.filter((a) => a.category === categoryFilter);
+      ? articles.filter((a) => a.isPublished)
+      : articles.filter((a) => a.category === categoryFilter && a.isPublished);
 
   const handleOpenArticle = (article: Article) => {
     setSelectedArticle(article);
