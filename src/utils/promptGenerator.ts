@@ -925,18 +925,83 @@ export async function generateHighQualityPrompts(
     return useCases.length > 0 ? useCases : ['writing']; // デフォルトは文章作成
   };
 
+  // 詳細なタグを自動生成（カテゴリと業務内容から関連タグを抽出）
+  const inferTags = (category: string, businessContext: string, patternName: string): string[] => {
+    const tags: string[] = [];
+    const contextLower = businessContext.toLowerCase();
+
+    // 基本タグ: カテゴリ名
+    const categoryNames: Record<string, string> = {
+      'business': 'ビジネス',
+      'marketing': 'マーケティング',
+      'sales': '営業',
+      'tech': '技術',
+      'creative': 'クリエイティブ',
+      'hr': '人事',
+      'finance': '経理',
+      'legal': '法務',
+      'support': 'サポート',
+      'education': '教育',
+      'realestate': '不動産',
+      'accounting': '会計',
+    };
+    if (categoryNames[category]) {
+      tags.push(categoryNames[category]);
+    }
+
+    // 業務内容から具体的なタグを抽出
+    if (contextLower.match(/契約|agreement|contract/)) tags.push('契約書');
+    if (contextLower.match(/提案|proposal|企画/)) tags.push('提案書');
+    if (contextLower.match(/報告|report|レポート/)) tags.push('報告書');
+    if (contextLower.match(/メール|email|連絡/)) tags.push('メール');
+    if (contextLower.match(/分析|analysis|解析/)) tags.push('分析');
+    if (contextLower.match(/チェックリスト|checklist|確認/)) tags.push('チェックリスト');
+    if (contextLower.match(/faq|質問|Q&A/)) tags.push('FAQ');
+    if (contextLower.match(/プレゼン|presentation|発表/)) tags.push('プレゼン');
+    if (contextLower.match(/会議|meeting|ミーティング/)) tags.push('会議');
+    if (contextLower.match(/データ|data/)) tags.push('データ処理');
+    if (contextLower.match(/顧客|customer|クライアント/)) tags.push('顧客対応');
+    if (contextLower.match(/物件|property|不動産/)) tags.push('物件管理');
+    if (contextLower.match(/財務|finance|経理/)) tags.push('財務管理');
+    if (contextLower.match(/採用|recruit|人材/)) tags.push('採用');
+    if (contextLower.match(/研修|training|教育/)) tags.push('研修');
+
+    // パターン名からタグを追加
+    if (patternName.includes('文書')) tags.push('文書作成');
+    if (patternName.includes('分析')) tags.push('分析');
+    if (patternName.includes('チェックリスト')) tags.push('チェックリスト');
+    if (patternName.includes('提案')) tags.push('提案');
+    if (patternName.includes('FAQ')) tags.push('FAQ');
+
+    // 業務内容そのものもタグに追加（ただしアスタリスクは除去）
+    const cleanContext = businessContext.replace(/\*/g, '').trim();
+    if (cleanContext && !tags.includes(cleanContext)) {
+      tags.push(cleanContext);
+    }
+
+    return tags.length > 0 ? tags : ['汎用'];
+  };
+
+  // アスタリスクを除去する関数
+  const removeAsterisks = (text: string): string => {
+    return text.replace(/\*/g, '');
+  };
+
   for (let i = 0; i < Math.min(count, PROMPT_PATTERNS.length); i++) {
     const pattern = PROMPT_PATTERNS[i % PROMPT_PATTERNS.length];
-    const title = `${businessContext} - ${pattern.name}`;
+    const cleanBusinessContext = removeAsterisks(businessContext);
+    const title = removeAsterisks(`${cleanBusinessContext} - ${pattern.name}`);
+    const content = removeAsterisks(pattern.template(cleanBusinessContext));
+
     const prompt: Prompt = {
       id: `generated-${Date.now()}-${i}`,
       title,
-      content: pattern.template(businessContext),
+      content,
       category,
-      useCase: inferUseCases(title, businessContext), // 自動的に用途を推定
-      tags: [businessContext, pattern.name, 'AI生成'],
-      usage: `このプロンプトは${businessContext}の${pattern.name}を支援します。角括弧[]で囲まれた部分に具体的な情報を入力してご使用ください。`,
-      example: `例: [項目1]に具体的な情報を入力し、AIに送信してください。`,
+      useCase: inferUseCases(title, cleanBusinessContext), // 自動的に用途を推定
+      tags: inferTags(category, cleanBusinessContext, pattern.name), // 詳細なタグを自動生成
+      usage: removeAsterisks(`このプロンプトは${cleanBusinessContext}の${pattern.name}を支援します。角括弧[]で囲まれた部分に具体的な情報を入力してご使用ください。`),
+      example: removeAsterisks(`例: [項目1]に具体的な情報を入力し、AIに送信してください。`),
       isPremium: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1461,15 +1526,19 @@ ${businessContext}の問題を迅速かつ的確に解決してください。`,
   for (let i = PROMPT_PATTERNS.length; i < count; i++) {
     const additionalIndex = (i - PROMPT_PATTERNS.length) % ADDITIONAL_PATTERNS.length;
     const pattern = ADDITIONAL_PATTERNS[additionalIndex];
+    const cleanBusinessContext = removeAsterisks(businessContext);
+    const title = removeAsterisks(`${cleanBusinessContext} - ${pattern.name}`);
+    const content = removeAsterisks(pattern.template);
 
     const prompt: Prompt = {
       id: `generated-${Date.now()}-${i}`,
-      title: `${businessContext} - ${pattern.name}`,
-      content: pattern.template,
+      title,
+      content,
       category,
-      tags: [businessContext, pattern.name, 'AI生成', '詳細ガイド'],
-      usage: `このプロンプトは${businessContext}の${pattern.name}を支援します。各セクションの角括弧[]で囲まれた部分に具体的な情報を入力してご使用ください。`,
-      example: `例: 具体的な業務内容や状況を角括弧内に記入し、AIに送信することで、カスタマイズされた詳細なガイドが得られます。`,
+      useCase: inferUseCases(title, cleanBusinessContext),
+      tags: inferTags(category, cleanBusinessContext, pattern.name),
+      usage: removeAsterisks(`このプロンプトは${cleanBusinessContext}の${pattern.name}を支援します。各セクションの角括弧[]で囲まれた部分に具体的な情報を入力してご使用ください。`),
+      example: removeAsterisks(`例: 具体的な業務内容や状況を角括弧内に記入し、AIに送信することで、カスタマイズされた詳細なガイドが得られます。`),
       isPremium: i % 2 === 0, // 半分はプレミアム
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
