@@ -196,7 +196,11 @@ function App() {
 
     // お気に入りページ
     if (selectedPage === 'favorites') {
+      console.log('Favorites page - favorites array:', favorites);
+      console.log('Favorites page - allPrompts count:', allPrompts.length);
+      console.log('Favorites page - allPrompts IDs:', allPrompts.map(p => p.id));
       prompts = allPrompts.filter((p) => favorites.includes(p.id));
+      console.log('Favorites page - filtered prompts:', prompts.length, prompts.map(p => ({ id: p.id, title: p.title })));
     }
     // 作成したプロンプトページ
     else if (selectedPage === 'custom') {
