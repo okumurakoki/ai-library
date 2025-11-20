@@ -17,6 +17,7 @@ import {
   TextField,
   Chip,
   CircularProgress,
+  Pagination,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -180,6 +181,9 @@ const AdminPanel: React.FC = () => {
   const [promptsLoading, setPromptsLoading] = useState(true);
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+  const [promptPage, setPromptPage] = useState(1);
+  const [articlePage, setArticlePage] = useState(1);
+  const itemsPerPage = 50;
 
   // Supabaseからプロンプトを取得
   useEffect(() => {
@@ -820,7 +824,9 @@ const AdminPanel: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {prompts.map((prompt) => (
+                {prompts
+                  .slice((promptPage - 1) * itemsPerPage, promptPage * itemsPerPage)
+                  .map((prompt) => (
                   <TableRow
                     key={prompt.id}
                     sx={{
@@ -914,6 +920,27 @@ const AdminPanel: React.FC = () => {
             </Table>
           </TableContainer>
 
+          {/* ページネーション */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={Math.ceil(prompts.length / itemsPerPage)}
+              page={promptPage}
+              onChange={(_, page) => setPromptPage(page)}
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  borderRadius: 0,
+                  '&.Mui-selected': {
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: '#333',
+                    },
+                  },
+                },
+              }}
+            />
+          </Box>
+
           {/* プロンプト生成ダイアログ */}
           <PromptGeneratorDialog
             open={generatorDialogOpen}
@@ -999,7 +1026,9 @@ const AdminPanel: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {articles.map((article) => (
+                {articles
+                  .slice((articlePage - 1) * itemsPerPage, articlePage * itemsPerPage)
+                  .map((article) => (
                   <TableRow
                     key={article.id}
                     sx={{
@@ -1107,6 +1136,27 @@ const AdminPanel: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* ページネーション */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={Math.ceil(articles.length / itemsPerPage)}
+              page={articlePage}
+              onChange={(_, page) => setArticlePage(page)}
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  borderRadius: 0,
+                  '&.Mui-selected': {
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: '#333',
+                    },
+                  },
+                },
+              }}
+            />
+          </Box>
 
             </>
           )}

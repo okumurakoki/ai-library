@@ -18,6 +18,7 @@ import {
   Select,
   MenuItem,
   FormControl,
+  Pagination,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -111,6 +112,8 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
   const [searchHistoryAnchorEl, setSearchHistoryAnchorEl] = useState<null | HTMLElement>(null);
   const [sortBy, setSortBy] = useState<'default' | 'popular' | 'favorite' | 'name'>('default');
   const [planFilter, setPlanFilter] = useState<'all' | 'free' | 'standard' | 'premium'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   const { recentSearches, popularSearches, recordSearch, deleteSearchHistoryItem, clearSearchHistory } =
     useSearchHistory();
@@ -233,6 +236,15 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
 
     return filtered;
   }, [prompts, selectedCategory, selectedUseCase, selectedTags, tagSearchMode, searchQuery, sortBy, planFilter, stats.mostUsedPrompts, favorites]);
+
+  // ページネーション用のプロンプト
+  const paginatedPrompts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredPrompts.slice(startIndex, endIndex);
+  }, [filteredPrompts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredPrompts.length / itemsPerPage);
 
   const handleOpenDetail = (prompt: Prompt) => {
     console.log('Opening detail for prompt:', prompt.id, prompt.title);
@@ -692,7 +704,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
             gap: 3,
           }}
         >
-          {filteredPrompts.map((prompt) => (
+          {paginatedPrompts.map((prompt) => (
             <PromptCard
               key={prompt.id}
               prompt={prompt}
@@ -718,7 +730,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {filteredPrompts.map((prompt) => (
+          {paginatedPrompts.map((prompt) => (
             <PromptCard
               key={prompt.id}
               prompt={prompt}
@@ -753,6 +765,32 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
           <Typography variant="body2" sx={{ color: '#999' }}>
             別のキーワードで検索してください
           </Typography>
+        </Box>
+      )}
+
+      {/* ページネーション */}
+      {filteredPrompts.length > itemsPerPage && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            sx={{
+              '& .MuiPaginationItem-root': {
+                borderRadius: 0,
+                '&.Mui-selected': {
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#333',
+                  },
+                },
+              },
+            }}
+          />
         </Box>
       )}
 
