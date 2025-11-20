@@ -119,15 +119,7 @@ const REVENUE_DATA = [
   { month: '12月', revenue: 1850000 },
 ];
 
-// サンプルカテゴリ別人気度データ
-const CATEGORY_DATA = [
-  { category: 'マーケティング', count: 856 },
-  { category: '営業', count: 742 },
-  { category: 'IT・エンジニアリング', count: 698 },
-  { category: '人事・採用', count: 534 },
-  { category: '経理・会計', count: 478 },
-  { category: 'カスタマーサポート', count: 423 },
-];
+// カテゴリ別人気度データは動的に生成されるため削除
 
 // サンプルユーザーアクティビティデータ
 const USER_ACTIVITY: UserActivity[] = [
