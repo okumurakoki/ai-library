@@ -1028,7 +1028,9 @@ const AdminPanel: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell sx={{ fontSize: '0.85rem' }}>
-                      {new Date(article.publishedAt).toLocaleDateString('ja-JP')}
+                      {article.publishedAt
+                        ? new Date(article.publishedAt).toLocaleDateString('ja-JP')
+                        : '未設定'}
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
