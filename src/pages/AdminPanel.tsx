@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -53,6 +53,8 @@ import {
   createPrompt,
   updatePrompt,
   deletePrompt as deletePromptFromSupabase,
+  getOverallStats,
+  getPromptCopyStats,
 } from '../lib/supabase';
 
 // サンプル記事データ
@@ -188,6 +190,25 @@ const AdminPanel: React.FC = () => {
   const itemsPerPage = 50;
   const { toast, showSuccess, showError, hideToast } = useToast();
 
+  // 実データKPI
+  const [kpiStats, setKpiStats] = useState<KPIStats>(SAMPLE_KPI);
+  const [kpiLoading, setKpiLoading] = useState(true);
+
+  // カテゴリ別人気度データを動的に生成
+  const categoryData = useMemo(() => {
+    const categoryCounts: { [key: string]: number } = {};
+
+    prompts.forEach((prompt) => {
+      const categoryName = getCategoryName(prompt.category);
+      categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + 1;
+    });
+
+    return Object.entries(categoryCounts)
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6); // 上位6カテゴリ
+  }, [prompts]);
+
   // Supabaseからプロンプトを取得
   useEffect(() => {
     const loadPrompts = async () => {
@@ -248,6 +269,52 @@ const AdminPanel: React.FC = () => {
     };
 
     loadArticles();
+  }, []);
+
+  // KPI統計をロード
+  useEffect(() => {
+    const loadKPI = async () => {
+      setKpiLoading(true);
+      try {
+        const stats = await getOverallStats();
+
+        // 今月のコピー数を取得
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const copyLogs = await getPromptCopyStats(monthStart);
+        const monthlyPromptCopies = copyLogs.length;
+
+        // 前月のコピー数を取得（変化率計算用）
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        const lastMonthCopyLogs = await getPromptCopyStats(lastMonthStart, lastMonthEnd);
+        const lastMonthCopies = lastMonthCopyLogs.length;
+
+        // 変化率を計算
+        const copiesChange = lastMonthCopies > 0
+          ? ((monthlyPromptCopies - lastMonthCopies) / lastMonthCopies) * 100
+          : 0;
+
+        setKpiStats({
+          activeUsers: stats.activeUsers,
+          monthlyRevenue: 0, // Stripe統合で取得可能
+          promptCopies: monthlyPromptCopies,
+          newSignups: 0, // Clerk webhookで追跡可能
+          activeUsersChange: 0, // 前月比データが必要
+          revenueChange: 0,
+          copiesChange: Math.round(copiesChange * 10) / 10,
+          signupsChange: 0,
+        });
+      } catch (error) {
+        console.error('Error loading KPI stats:', error);
+        // エラー時はサンプルデータを使用
+        setKpiStats(SAMPLE_KPI);
+      } finally {
+        setKpiLoading(false);
+      }
+    };
+
+    loadKPI();
   }, []);
 
   const handleGeneratePrompts = async (newPrompts: Prompt[]) => {
@@ -607,26 +674,34 @@ const AdminPanel: React.FC = () => {
               px: 2,
             }}
           >
-            <KPICard
-              title="アクティブユーザー数"
-              value={SAMPLE_KPI.activeUsers.toLocaleString()}
-              change={SAMPLE_KPI.activeUsersChange}
-            />
-            <KPICard
-              title="月間収益"
-              value={`¥${SAMPLE_KPI.monthlyRevenue.toLocaleString()}`}
-              change={SAMPLE_KPI.revenueChange}
-            />
-            <KPICard
-              title="プロンプトコピー数"
-              value={SAMPLE_KPI.promptCopies.toLocaleString()}
-              change={SAMPLE_KPI.copiesChange}
-            />
-            <KPICard
-              title="新規登録数"
-              value={SAMPLE_KPI.newSignups}
-              change={SAMPLE_KPI.signupsChange}
-            />
+            {kpiLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <KPICard
+                  title="アクティブユーザー数"
+                  value={kpiStats.activeUsers.toLocaleString()}
+                  change={kpiStats.activeUsersChange}
+                />
+                <KPICard
+                  title="月間収益"
+                  value={`¥${kpiStats.monthlyRevenue.toLocaleString()}`}
+                  change={kpiStats.revenueChange}
+                />
+                <KPICard
+                  title="プロンプトコピー数"
+                  value={kpiStats.promptCopies.toLocaleString()}
+                  change={kpiStats.copiesChange}
+                />
+                <KPICard
+                  title="新規登録数"
+                  value={kpiStats.newSignups}
+                  change={kpiStats.signupsChange}
+                />
+              </>
+            )}
           </Box>
 
           {/* グラフセクション */}
@@ -672,7 +747,7 @@ const AdminPanel: React.FC = () => {
                 カテゴリ別コピー数
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={CATEGORY_DATA}>
+                <BarChart data={categoryData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="category" angle={-45} textAnchor="end" height={100} />
                   <YAxis />
