@@ -22,7 +22,8 @@ async function searchWeb(query: string, maxResults: number = 10): Promise<any[]>
   }
 
   try {
-    const response = await tavilyClient.search(query, {
+    const response = await tavilyClient.search({
+      query,
       max_results: maxResults,
       search_depth: 'advanced',
       include_answer: true,
