@@ -18,6 +18,11 @@ import {
   Chip,
   CircularProgress,
   Pagination,
+  Checkbox,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -127,6 +132,10 @@ const AdminPanel: React.FC = () => {
   const [articlePage, setArticlePage] = useState(1);
   const itemsPerPage = 50;
   const { toast, showSuccess, showError, hideToast } = useToast();
+
+  // 一括編集用の状態
+  const [selectedPromptIds, setSelectedPromptIds] = useState<string[]>([]);
+  const [bulkEditMode, setBulkEditMode] = useState(false);
 
   // 実データKPI
   const [kpiStats, setKpiStats] = useState<KPIStats>(SAMPLE_KPI);
@@ -433,6 +442,111 @@ const AdminPanel: React.FC = () => {
     } catch (error) {
       console.error('Error deleting prompt:', error);
       showError('プロンプトの削除に失敗しました');
+    }
+  };
+
+  // 一括編集機能
+  const handleSelectPrompt = (promptId: string) => {
+    setSelectedPromptIds((prev) =>
+      prev.includes(promptId)
+        ? prev.filter((id) => id !== promptId)
+        : [...prev, promptId]
+    );
+  };
+
+  const handleSelectAllPrompts = () => {
+    const currentPagePrompts = prompts
+      .slice((promptPage - 1) * itemsPerPage, promptPage * itemsPerPage)
+      .map((p) => p.id);
+
+    if (selectedPromptIds.length === currentPagePrompts.length) {
+      setSelectedPromptIds([]);
+    } else {
+      setSelectedPromptIds(currentPagePrompts);
+    }
+  };
+
+  const handleBulkUpdateCategory = async (newCategory: string) => {
+    if (selectedPromptIds.length === 0) {
+      showError('プロンプトが選択されていません');
+      return;
+    }
+
+    try {
+      const updatePromises = selectedPromptIds.map((promptId) =>
+        updatePrompt(promptId, { category: newCategory })
+      );
+      await Promise.all(updatePromises);
+
+      // ローカルステートを更新
+      setPrompts(
+        prompts.map((p) =>
+          selectedPromptIds.includes(p.id) ? { ...p, category: newCategory } : p
+        )
+      );
+
+      showSuccess(`${selectedPromptIds.length}件のプロンプトのカテゴリを更新しました`);
+      setSelectedPromptIds([]);
+    } catch (error) {
+      console.error('Error bulk updating category:', error);
+      showError('一括更新に失敗しました');
+    }
+  };
+
+  const handleBulkUpdatePlanType = async (newPlanType: 'free' | 'standard' | 'premium') => {
+    if (selectedPromptIds.length === 0) {
+      showError('プロンプトが選択されていません');
+      return;
+    }
+
+    try {
+      const updatePromises = selectedPromptIds.map((promptId) =>
+        updatePrompt(promptId, {
+          plan_type: newPlanType,
+          is_premium: newPlanType === 'premium',
+        })
+      );
+      await Promise.all(updatePromises);
+
+      // ローカルステートを更新
+      setPrompts(
+        prompts.map((p) =>
+          selectedPromptIds.includes(p.id)
+            ? { ...p, planType: newPlanType, isPremium: newPlanType === 'premium' }
+            : p
+        )
+      );
+
+      showSuccess(`${selectedPromptIds.length}件のプロンプトのプランを更新しました`);
+      setSelectedPromptIds([]);
+    } catch (error) {
+      console.error('Error bulk updating plan type:', error);
+      showError('一括更新に失敗しました');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPromptIds.length === 0) {
+      showError('プロンプトが選択されていません');
+      return;
+    }
+
+    if (!confirm(`選択した${selectedPromptIds.length}件のプロンプトを削除しますか？`)) {
+      return;
+    }
+
+    try {
+      const deletePromises = selectedPromptIds.map((promptId) =>
+        deletePromptFromSupabase(promptId)
+      );
+      await Promise.all(deletePromises);
+
+      setPrompts(prompts.filter((p) => !selectedPromptIds.includes(p.id)));
+      showSuccess(`${selectedPromptIds.length}件のプロンプトを削除しました`);
+      setSelectedPromptIds([]);
+    } catch (error) {
+      console.error('Error bulk deleting:', error);
+      showError('一括削除に失敗しました');
     }
   };
 
@@ -823,24 +937,126 @@ const AdminPanel: React.FC = () => {
               {/* ヘッダーと新規作成ボタン */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  プロンプト一覧
+                  プロンプト一覧 {selectedPromptIds.length > 0 && `(${selectedPromptIds.length}件選択中)`}
                 </Typography>
-            <Button
-              variant="contained"
-              onClick={() => setGeneratorDialogOpen(true)}
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {selectedPromptIds.length > 0 && (
+                    <Button
+                      variant="outlined"
+                      onClick={() => setBulkEditMode(!bulkEditMode)}
+                      sx={{
+                        borderColor: '#1976d2',
+                        color: '#1976d2',
+                        fontWeight: 600,
+                        borderRadius: 0,
+                        '&:hover': {
+                          borderColor: '#1565c0',
+                          backgroundColor: '#e3f2fd',
+                        },
+                      }}
+                    >
+                      {bulkEditMode ? '一括編集を閉じる' : '一括編集'}
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    onClick={() => setGeneratorDialogOpen(true)}
+                    sx={{
+                      backgroundColor: '#000',
+                      color: '#fff',
+                      fontWeight: 600,
+                      borderRadius: 0,
+                      '&:hover': {
+                        backgroundColor: '#333',
+                      },
+                    }}
+                  >
+                    AIプロンプト生成
+                  </Button>
+                </Box>
+          </Box>
+
+          {/* 一括編集パネル */}
+          {bulkEditMode && selectedPromptIds.length > 0 && (
+            <Paper
               sx={{
-                backgroundColor: '#000',
-                color: '#fff',
-                fontWeight: 600,
+                p: 2,
+                mb: 3,
+                border: '2px solid #1976d2',
                 borderRadius: 0,
-                '&:hover': {
-                  backgroundColor: '#333',
-                },
+                backgroundColor: '#e3f2fd',
               }}
             >
-              AIプロンプト生成
-            </Button>
-          </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
+                一括編集オプション ({selectedPromptIds.length}件選択中)
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>カテゴリを変更</InputLabel>
+                  <Select
+                    label="カテゴリを変更"
+                    onChange={(e) => handleBulkUpdateCategory(e.target.value)}
+                    sx={{
+                      borderRadius: 0,
+                      backgroundColor: '#fff',
+                    }}
+                    defaultValue=""
+                  >
+                    <MenuItem value="business">ビジネス</MenuItem>
+                    <MenuItem value="marketing">マーケティング</MenuItem>
+                    <MenuItem value="sales">営業</MenuItem>
+                    <MenuItem value="tech">技術開発</MenuItem>
+                    <MenuItem value="creative">クリエイティブ</MenuItem>
+                    <MenuItem value="hr">人事・労務</MenuItem>
+                    <MenuItem value="finance">経理・財務</MenuItem>
+                    <MenuItem value="legal">法務</MenuItem>
+                    <MenuItem value="support">カスタマーサポート</MenuItem>
+                    <MenuItem value="education">教育・研修</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>プランタイプを変更</InputLabel>
+                  <Select
+                    label="プランタイプを変更"
+                    onChange={(e) => handleBulkUpdatePlanType(e.target.value as 'free' | 'standard' | 'premium')}
+                    sx={{
+                      borderRadius: 0,
+                      backgroundColor: '#fff',
+                    }}
+                    defaultValue=""
+                  >
+                    <MenuItem value="free">無料</MenuItem>
+                    <MenuItem value="standard">スタンダード</MenuItem>
+                    <MenuItem value="premium">プレミアム</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleBulkDelete}
+                  sx={{
+                    borderRadius: 0,
+                    fontWeight: 600,
+                  }}
+                >
+                  選択したプロンプトを削除
+                </Button>
+
+                <Button
+                  variant="text"
+                  onClick={() => setSelectedPromptIds([])}
+                  sx={{
+                    borderRadius: 0,
+                    fontWeight: 600,
+                  }}
+                >
+                  選択解除
+                </Button>
+              </Box>
+            </Paper>
+          )}
 
           {/* 検索とフィルター */}
           <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
@@ -876,6 +1092,33 @@ const AdminPanel: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={
+                        prompts
+                          .slice((promptPage - 1) * itemsPerPage, promptPage * itemsPerPage)
+                          .every((p) => selectedPromptIds.includes(p.id))
+                      }
+                      indeterminate={
+                        prompts
+                          .slice((promptPage - 1) * itemsPerPage, promptPage * itemsPerPage)
+                          .some((p) => selectedPromptIds.includes(p.id)) &&
+                        !prompts
+                          .slice((promptPage - 1) * itemsPerPage, promptPage * itemsPerPage)
+                          .every((p) => selectedPromptIds.includes(p.id))
+                      }
+                      onChange={handleSelectAllPrompts}
+                      sx={{
+                        color: '#000',
+                        '&.Mui-checked': {
+                          color: '#000',
+                        },
+                        '&.MuiCheckbox-indeterminate': {
+                          color: '#000',
+                        },
+                      }}
+                    />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>タイトル</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>カテゴリ</TableCell>
@@ -894,8 +1137,23 @@ const AdminPanel: React.FC = () => {
                       '&:hover': {
                         backgroundColor: '#f9f9f9',
                       },
+                      backgroundColor: selectedPromptIds.includes(prompt.id)
+                        ? '#f0f7ff'
+                        : 'inherit',
                     }}
                   >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedPromptIds.includes(prompt.id)}
+                        onChange={() => handleSelectPrompt(prompt.id)}
+                        sx={{
+                          color: '#000',
+                          '&.Mui-checked': {
+                            color: '#000',
+                          },
+                        }}
+                      />
+                    </TableCell>
                     <TableCell sx={{ fontSize: '0.85rem' }}>{prompt.id}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{prompt.title}</TableCell>
                     <TableCell>

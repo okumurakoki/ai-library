@@ -20,6 +20,7 @@
     "@mui/x-data-grid": "^8.18.0",
     "@stripe/stripe-js": "^8.4.0",
     "@supabase/supabase-js": "^2.81.1",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.553.0",
     "marked": "^17.0.0",
     "react": "^19.2.0",
@@ -27,7 +28,8 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
     "recharts": "^3.4.1",
-    "tavily": "^1.0.2"
+    "tavily": "^1.0.2",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
