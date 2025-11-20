@@ -377,18 +377,27 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                         }}
                       />
                       <Chip
-                        label={prompt.planType || (prompt.isPremium ? 'premium' : 'free') === 'free' ? '無料' : prompt.planType === 'standard' ? 'スタンダード' : 'プレミアム'}
+                        label={
+                          (() => {
+                            const plan = prompt.planType || (prompt.isPremium ? 'premium' : 'free');
+                            if (plan === 'free') return '無料';
+                            if (plan === 'standard') return 'スタンダード';
+                            return 'プレミアム';
+                          })()
+                        }
                         size="small"
                         onClick={() => cyclePromptPlan(prompt.id)}
                         sx={{
-                          backgroundColor:
-                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'free' ? '#e8f5e9' :
-                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'standard' ? '#e3f2fd' :
-                            '#000',
-                          color:
-                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'premium' ? '#fff' : '#000',
+                          backgroundColor: (() => {
+                            const plan = prompt.planType || (prompt.isPremium ? 'premium' : 'free');
+                            if (plan === 'free') return '#2e7d32';
+                            if (plan === 'standard') return '#1976d2';
+                            return '#000';
+                          })(),
+                          color: '#fff',
                           borderRadius: 0,
                           fontSize: '0.7rem',
+                          fontWeight: 600,
                           cursor: 'pointer',
                           '&:hover': {
                             opacity: 0.8,

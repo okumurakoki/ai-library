@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import {
   Close as CloseIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { fetchArticles } from '../lib/supabase';
 import type { Article } from '../types';
@@ -139,32 +140,32 @@ const Articles: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Supabaseから記事を取得
-  useEffect(() => {
-    const loadArticles = async () => {
-      setLoading(true);
-      try {
-        const fetchedArticles = await fetchArticles();
-        if (fetchedArticles && fetchedArticles.length > 0) {
-          // Supabaseの形式をフロントエンドの形式に変換
-          const articlesData = fetchedArticles.map((a: any) => ({
-            ...a,
-            isPublished: a.is_published,
-            publishedAt: a.published_at,
-            thumbnailUrl: a.thumbnail_url,
-          }));
-          setArticles(articlesData);
-        } else {
-          // Supabaseに記事がない場合はサンプル記事を使用
-          setArticles(SAMPLE_ARTICLES);
-        }
-      } catch (error) {
-        console.error('Error loading articles:', error);
+  const loadArticles = async () => {
+    setLoading(true);
+    try {
+      const fetchedArticles = await fetchArticles();
+      if (fetchedArticles && fetchedArticles.length > 0) {
+        // Supabaseの形式をフロントエンドの形式に変換
+        const articlesData = fetchedArticles.map((a: any) => ({
+          ...a,
+          isPublished: a.is_published,
+          publishedAt: a.published_at,
+          thumbnailUrl: a.thumbnail_url,
+        }));
+        setArticles(articlesData);
+      } else {
+        // Supabaseに記事がない場合はサンプル記事を使用
         setArticles(SAMPLE_ARTICLES);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error loading articles:', error);
+      setArticles(SAMPLE_ARTICLES);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadArticles();
   }, []);
 
@@ -204,6 +205,20 @@ const Articles: React.FC = () => {
             AIの最新情報と使い方のヒント
           </Typography>
         </Box>
+        <IconButton
+          onClick={loadArticles}
+          disabled={loading}
+          sx={{
+            border: '1px solid #e0e0e0',
+            borderRadius: 0,
+            '&:hover': {
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+          title="記事を再読み込み"
+        >
+          <RefreshIcon />
+        </IconButton>
       </Box>
 
       {/* カテゴリフィルター */}
