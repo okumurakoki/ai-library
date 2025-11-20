@@ -55,6 +55,7 @@ import {
   deletePrompt as deletePromptFromSupabase,
   getOverallStats,
   getPromptCopyStats,
+  getRecentUserActivity,
 } from '../lib/supabase';
 
 // サンプル記事データ
@@ -109,61 +110,8 @@ const SAMPLE_KPI: KPIStats = {
   signupsChange: -5.2,
 };
 
-// サンプル収益データ
-const REVENUE_DATA = [
-  { month: '7月', revenue: 1200000 },
-  { month: '8月', revenue: 1350000 },
-  { month: '9月', revenue: 1500000 },
-  { month: '10月', revenue: 1650000 },
-  { month: '11月', revenue: 1750000 },
-  { month: '12月', revenue: 1850000 },
-];
-
 // カテゴリ別人気度データは動的に生成されるため削除
-
-// サンプルユーザーアクティビティデータ
-const USER_ACTIVITY: UserActivity[] = [
-  {
-    id: '1',
-    name: '山田太郎',
-    email: 'yamada@example.com',
-    lastAccess: '2025-01-15 14:30',
-    plan: 'premium',
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: '佐藤花子',
-    email: 'sato@example.com',
-    lastAccess: '2025-01-15 13:15',
-    plan: 'premium',
-    status: 'active',
-  },
-  {
-    id: '3',
-    name: '鈴木一郎',
-    email: 'suzuki@example.com',
-    lastAccess: '2025-01-14 18:45',
-    plan: 'free',
-    status: 'active',
-  },
-  {
-    id: '4',
-    name: '田中美咲',
-    email: 'tanaka@example.com',
-    lastAccess: '2025-01-14 09:20',
-    plan: 'premium',
-    status: 'active',
-  },
-  {
-    id: '5',
-    name: '伊藤健太',
-    email: 'ito@example.com',
-    lastAccess: '2025-01-13 16:30',
-    plan: 'free',
-    status: 'active',
-  },
-];
+// 収益データ・ユーザーアクティビティデータは実データで取得
 
 const AdminPanel: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -185,6 +133,13 @@ const AdminPanel: React.FC = () => {
   // 実データKPI
   const [kpiStats, setKpiStats] = useState<KPIStats>(SAMPLE_KPI);
   const [kpiLoading, setKpiLoading] = useState(true);
+
+  // ユーザーアクティビティ
+  const [userActivity, setUserActivity] = useState<Array<{
+    userId: string;
+    lastAccess: Date;
+  }>>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   // カテゴリ別人気度データを動的に生成
   const categoryData = useMemo(() => {
@@ -307,6 +262,24 @@ const AdminPanel: React.FC = () => {
     };
 
     loadKPI();
+  }, []);
+
+  // ユーザーアクティビティをロード
+  useEffect(() => {
+    const loadUserActivity = async () => {
+      setActivityLoading(true);
+      try {
+        const activities = await getRecentUserActivity(10);
+        setUserActivity(activities);
+      } catch (error) {
+        console.error('Error loading user activity:', error);
+        setUserActivity([]);
+      } finally {
+        setActivityLoading(false);
+      }
+    };
+
+    loadUserActivity();
   }, []);
 
   const handleGeneratePrompts = async (newPrompts: Prompt[]) => {
@@ -709,22 +682,19 @@ const AdminPanel: React.FC = () => {
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
                 月間収益推移
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={REVENUE_DATA}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#000"
-                    strokeWidth={2}
-                    name="収益"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 300,
+                  backgroundColor: '#f5f5f5',
+                }}
+              >
+                <Typography variant="body1" sx={{ color: '#666' }}>
+                  収益データは現在利用できません（Stripe連携が必要です）
+                </Typography>
+              </Box>
             </Paper>
 
             {/* カテゴリ別人気度グラフ */}
@@ -768,51 +738,74 @@ const AdminPanel: React.FC = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>ユーザー名</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>メール</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>ユーザーID</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>最終アクセス</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>プラン</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>ステータス</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {USER_ACTIVITY.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.lastAccess}</TableCell>
-                      <TableCell>
-                        <Box
-                          component="span"
-                          sx={{
-                            px: 1,
-                            py: 0.5,
-                            backgroundColor: user.plan === 'premium' ? '#000' : '#666',
-                            color: '#fff',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {user.plan === 'premium' ? 'プレミアム' : '無料'}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          component="span"
-                          sx={{
-                            px: 1,
-                            py: 0.5,
-                            backgroundColor: user.status === 'active' ? '#2e7d32' : '#d32f2f',
-                            color: '#fff',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {user.status === 'active' ? 'アクティブ' : '非アクティブ'}
-                        </Box>
+                  {activityLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        <CircularProgress size={24} />
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : userActivity.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        <Typography variant="body2" sx={{ color: '#666', py: 2 }}>
+                          ユーザーアクティビティがありません
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    userActivity.map((activity) => {
+                      const lastAccessDate = new Date(activity.lastAccess);
+                      const now = new Date();
+                      const hoursDiff = (now.getTime() - lastAccessDate.getTime()) / (1000 * 60 * 60);
+                      const isRecent = hoursDiff < 24;
+
+                      return (
+                        <TableRow key={activity.userId}>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: 'monospace',
+                                fontSize: '0.85rem',
+                              }}
+                            >
+                              {activity.userId.substring(0, 12)}...
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {lastAccessDate.toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <Box
+                              component="span"
+                              sx={{
+                                px: 1,
+                                py: 0.5,
+                                backgroundColor: isRecent ? '#2e7d32' : '#666',
+                                color: '#fff',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {isRecent ? 'アクティブ' : '非アクティブ'}
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

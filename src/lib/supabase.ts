@@ -360,6 +360,53 @@ export const getOverallStats = async () => {
   };
 };
 
+// 最近のユーザーアクティビティを取得（お気に入りとカスタムプロンプトから）
+export const getRecentUserActivity = async (limit: number = 10) => {
+  // お気に入りテーブルから最近のアクティビティを取得
+  const { data: favoritesData } = await supabase
+    .from('user_favorites')
+    .select('user_id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit * 2); // 重複を考慮して多めに取得
+
+  // カスタムプロンプトテーブルから最近のアクティビティを取得
+  const { data: customPromptsData } = await supabase
+    .from('custom_prompts')
+    .select('user_id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit * 2);
+
+  // 両方のデータを結合してユーザーごとの最終アクセス時刻を計算
+  const userActivityMap = new Map<string, Date>();
+
+  favoritesData?.forEach((item: any) => {
+    const currentDate = userActivityMap.get(item.user_id);
+    const newDate = new Date(item.created_at);
+    if (!currentDate || newDate > currentDate) {
+      userActivityMap.set(item.user_id, newDate);
+    }
+  });
+
+  customPromptsData?.forEach((item: any) => {
+    const currentDate = userActivityMap.get(item.user_id);
+    const newDate = new Date(item.created_at);
+    if (!currentDate || newDate > currentDate) {
+      userActivityMap.set(item.user_id, newDate);
+    }
+  });
+
+  // Map を配列に変換してソート
+  const sortedActivities = Array.from(userActivityMap.entries())
+    .map(([userId, lastAccess]) => ({
+      userId,
+      lastAccess,
+    }))
+    .sort((a, b) => b.lastAccess.getTime() - a.lastAccess.getTime())
+    .slice(0, limit);
+
+  return sortedActivities;
+};
+
 // =============================================
 // お気に入り機能
 // =============================================
