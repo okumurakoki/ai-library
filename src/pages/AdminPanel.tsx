@@ -820,7 +820,7 @@ const AdminPanel: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {prompts.slice(0, 10).map((prompt) => (
+                {prompts.map((prompt) => (
                   <TableRow
                     key={prompt.id}
                     sx={{
