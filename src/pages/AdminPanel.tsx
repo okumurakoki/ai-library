@@ -46,6 +46,9 @@ import {
   createArticle,
   updateArticle,
   deleteArticle as deleteArticleFromSupabase,
+  createPrompt,
+  updatePrompt,
+  deletePrompt as deletePromptFromSupabase,
 } from '../lib/supabase';
 
 // サンプル記事データ
@@ -199,9 +202,42 @@ const AdminPanel: React.FC = () => {
     loadArticles();
   }, []);
 
-  const handleGeneratePrompts = (newPrompts: Prompt[]) => {
-    setPrompts([...prompts, ...newPrompts]);
-    alert(`${newPrompts.length}件のプロンプトを追加しました`);
+  const handleGeneratePrompts = async (newPrompts: Prompt[]) => {
+    try {
+      const createdPrompts = [];
+
+      for (const prompt of newPrompts) {
+        const created = await createPrompt({
+          id: prompt.id,
+          title: prompt.title,
+          content: prompt.content,
+          category: prompt.category,
+          use_case: prompt.useCase,
+          tags: prompt.tags,
+          usage: prompt.usage,
+          example: prompt.example,
+          is_premium: prompt.isPremium,
+        });
+
+        if (created) {
+          // Supabaseの形式をフロントエンドの形式に変換
+          const promptForDisplay: Prompt = {
+            ...created,
+            useCase: created.use_case,
+            isPremium: created.is_premium,
+            createdAt: created.created_at,
+            updatedAt: created.updated_at,
+          };
+          createdPrompts.push(promptForDisplay);
+        }
+      }
+
+      setPrompts([...createdPrompts, ...prompts]);
+      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました`);
+    } catch (error) {
+      console.error('Error creating prompts:', error);
+      alert('プロンプトの保存に失敗しました');
+    }
   };
 
   const handleGenerateArticle = async (newArticle: Article) => {
@@ -241,24 +277,79 @@ const AdminPanel: React.FC = () => {
     setEditPromptDialogOpen(true);
   };
 
-  const handleSavePrompt = (updatedPrompt: Prompt) => {
+  const handleSavePrompt = async (updatedPrompt: Prompt) => {
     const existingIndex = prompts.findIndex((p) => p.id === updatedPrompt.id);
-    if (existingIndex >= 0) {
-      // 編集
-      const newPrompts = [...prompts];
-      newPrompts[existingIndex] = updatedPrompt;
-      setPrompts(newPrompts);
-      alert('プロンプトを更新しました');
-    } else {
-      // 新規作成
-      setPrompts([updatedPrompt, ...prompts]);
-      alert('プロンプトを作成しました');
+
+    try {
+      if (existingIndex >= 0) {
+        // 編集
+        const updated = await updatePrompt(updatedPrompt.id, {
+          title: updatedPrompt.title,
+          content: updatedPrompt.content,
+          category: updatedPrompt.category,
+          use_case: updatedPrompt.useCase,
+          tags: updatedPrompt.tags,
+          usage: updatedPrompt.usage,
+          example: updatedPrompt.example,
+          is_premium: updatedPrompt.isPremium,
+        });
+
+        if (updated) {
+          const promptForDisplay: Prompt = {
+            ...updated,
+            useCase: updated.use_case,
+            isPremium: updated.is_premium,
+            createdAt: updated.created_at,
+            updatedAt: updated.updated_at,
+          };
+          const newPrompts = [...prompts];
+          newPrompts[existingIndex] = promptForDisplay;
+          setPrompts(newPrompts);
+          alert('プロンプトを更新しました');
+        }
+      } else {
+        // 新規作成
+        const created = await createPrompt({
+          id: updatedPrompt.id,
+          title: updatedPrompt.title,
+          content: updatedPrompt.content,
+          category: updatedPrompt.category,
+          use_case: updatedPrompt.useCase,
+          tags: updatedPrompt.tags,
+          usage: updatedPrompt.usage,
+          example: updatedPrompt.example,
+          is_premium: updatedPrompt.isPremium,
+        });
+
+        if (created) {
+          const promptForDisplay: Prompt = {
+            ...created,
+            useCase: created.use_case,
+            isPremium: created.is_premium,
+            createdAt: created.created_at,
+            updatedAt: created.updated_at,
+          };
+          setPrompts([promptForDisplay, ...prompts]);
+          alert('プロンプトを作成しました');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving prompt:', error);
+      alert('プロンプトの保存に失敗しました');
     }
   };
 
-  const handleDeletePrompt = (promptId: string) => {
-    setPrompts(prompts.filter((p) => p.id !== promptId));
-    alert('プロンプトを削除しました');
+  const handleDeletePrompt = async (promptId: string) => {
+    try {
+      const success = await deletePromptFromSupabase(promptId);
+      if (success) {
+        setPrompts(prompts.filter((p) => p.id !== promptId));
+        alert('プロンプトを削除しました');
+      }
+    } catch (error) {
+      console.error('Error deleting prompt:', error);
+      alert('プロンプトの削除に失敗しました');
+    }
   };
 
   const handleToggleArticlePublish = async (articleId: string) => {

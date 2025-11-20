@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -19,6 +19,7 @@ import { useCustomPrompts } from './hooks/useCustomPrompts';
 import { useFolders } from './hooks/useFolders';
 import { usePromptHistory } from './hooks/usePromptHistory';
 import { getUserPermissions } from './utils/userPermissions';
+import { fetchPrompts } from './lib/supabase';
 import type { FavoriteFolder, Prompt } from './types';
 
 // Material-UIテーマのカスタマイズ
@@ -95,7 +96,39 @@ function App() {
   const { recordPromptUse } = usePromptHistory();
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
-  const [allPrompts, setAllPrompts] = useState([...SAMPLE_PROMPTS]);
+  const [allPrompts, setAllPrompts] = useState<Prompt[]>([...SAMPLE_PROMPTS]);
+  const [promptsLoading, setPromptsLoading] = useState(true);
+
+  // Supabaseからプロンプトを取得
+  useEffect(() => {
+    const loadPrompts = async () => {
+      setPromptsLoading(true);
+      try {
+        const fetchedPrompts = await fetchPrompts();
+        if (fetchedPrompts && fetchedPrompts.length > 0) {
+          // Supabaseの形式をフロントエンドの形式に変換
+          const prompts = fetchedPrompts.map((p: any) => ({
+            ...p,
+            useCase: p.use_case,
+            isPremium: p.is_premium,
+            createdAt: p.created_at,
+            updatedAt: p.updated_at,
+          }));
+          setAllPrompts(prompts);
+        } else {
+          // Supabaseにプロンプトがない場合はサンプルを使用
+          setAllPrompts(SAMPLE_PROMPTS);
+        }
+      } catch (error) {
+        console.error('Error loading prompts:', error);
+        setAllPrompts(SAMPLE_PROMPTS);
+      } finally {
+        setPromptsLoading(false);
+      }
+    };
+
+    loadPrompts();
+  }, []);
 
   // URLパラメータをチェックしてサンクスページを表示
   const urlParams = new URLSearchParams(window.location.search);

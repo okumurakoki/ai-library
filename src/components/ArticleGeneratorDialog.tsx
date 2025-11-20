@@ -23,7 +23,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Visibility as VisibilityIcon,
-  Search as SearchIcon,
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import type { Article } from '../types';
@@ -47,48 +46,6 @@ const ArticleGeneratorDialog: React.FC<ArticleGeneratorDialogProps> = ({
   const [generatedArticle, setGeneratedArticle] = useState<Article | null>(null);
   const [error, setError] = useState('');
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
-  const [researching, setResearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [researchContext, setResearchContext] = useState('');
-
-  const handleResearch = async () => {
-    if (!topic) {
-      setError('トピックを入力してリサーチしてください');
-      return;
-    }
-
-    setResearching(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/tavily-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `${topic} AI 最新情報`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('検索に失敗しました');
-      }
-
-      const data = await response.json();
-      setSearchResults(data.results || []);
-
-      // 検索結果をコンテキストとして保存
-      const context = data.results
-        .map((r: any, i: number) => `[${i + 1}] ${r.title}\n${r.content}`)
-        .join('\n\n');
-      setResearchContext(context);
-    } catch (err) {
-      setError('最新情報の取得に失敗しました');
-    } finally {
-      setResearching(false);
-    }
-  };
 
   const handleGenerate = async () => {
     if (!topic) {
@@ -105,7 +62,7 @@ const ArticleGeneratorDialog: React.FC<ArticleGeneratorDialogProps> = ({
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
 
-      const article = await generateArticle(category, topic, keywordArray, researchContext);
+      const article = await generateArticle(category, topic, keywordArray);
       setGeneratedArticle(article);
     } catch (err) {
       setError('記事の生成に失敗しました');
@@ -210,75 +167,28 @@ const ArticleGeneratorDialog: React.FC<ArticleGeneratorDialogProps> = ({
             </FormControl>
 
             {/* トピック */}
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                label="トピック・テーマ"
-                placeholder="例: ChatGPT-4の新機能、プロンプトエンジニアリングの基礎"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                sx={{
-                  mb: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 0,
-                    '& fieldset': {
-                      borderColor: '#e0e0e0',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#000',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#000',
-                    },
-                  },
-                }}
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleResearch}
-                disabled={researching || !topic}
-                startIcon={researching ? <CircularProgress size={16} /> : <SearchIcon />}
-                sx={{
-                  borderColor: '#000',
-                  color: '#000',
+            <TextField
+              fullWidth
+              label="トピック・テーマ"
+              placeholder="例: ChatGPT-4の新機能、プロンプトエンジニアリングの基礎"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
                   borderRadius: 0,
-                  '&:hover': {
-                    borderColor: '#000',
-                    backgroundColor: '#f5f5f5',
+                  '& fieldset': {
+                    borderColor: '#e0e0e0',
                   },
-                }}
-              >
-                {researching ? 'リサーチ中...' : '最新情報をリサーチ'}
-              </Button>
-            </Box>
-
-            {/* 検索結果表示 */}
-            {searchResults.length > 0 && (
-              <Box sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                  リサーチ結果（{searchResults.length}件）
-                </Typography>
-                <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
-                  {searchResults.map((result, index) => (
-                    <Box key={index} sx={{ mb: 1.5, pb: 1.5, borderBottom: index < searchResults.length - 1 ? '1px solid #e0e0e0' : 'none' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {result.title}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#666', display: 'block', mb: 0.5 }}>
-                        {result.url}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#666' }}>
-                        {result.content?.substring(0, 150)}...
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Typography variant="caption" sx={{ color: '#666', display: 'block', mt: 1 }}>
-                  この情報を元に記事を生成します
-                </Typography>
-              </Box>
-            )}
+                  '&:hover fieldset': {
+                    borderColor: '#000',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#000',
+                  },
+                },
+              }}
+            />
 
             {/* キーワード */}
             <TextField

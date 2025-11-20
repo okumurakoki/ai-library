@@ -5,19 +5,103 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// =============================================
+// プロンプト機能
+// =============================================
+
 // Supabaseからプロンプトを取得
 export const fetchPrompts = async () => {
   const { data, error } = await supabase
     .from('prompts')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false});
 
   if (error) {
     console.error('Error fetching prompts:', error);
     return [];
   }
 
+  return data || [];
+};
+
+// プロンプトを作成
+export const createPrompt = async (prompt: {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  use_case?: string[];
+  tags?: string[];
+  usage?: string;
+  example?: string;
+  is_premium?: boolean;
+}) => {
+  const { data, error } = await supabase
+    .from('prompts')
+    .insert({
+      id: prompt.id,
+      title: prompt.title,
+      content: prompt.content,
+      category: prompt.category,
+      use_case: prompt.use_case || [],
+      tags: prompt.tags || [],
+      usage: prompt.usage,
+      example: prompt.example,
+      is_premium: prompt.is_premium || false,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating prompt:', error);
+    return null;
+  }
+
   return data;
+};
+
+// プロンプトを更新
+export const updatePrompt = async (
+  promptId: string,
+  updates: {
+    title?: string;
+    content?: string;
+    category?: string;
+    use_case?: string[];
+    tags?: string[];
+    usage?: string;
+    example?: string;
+    is_premium?: boolean;
+  }
+) => {
+  const { data, error } = await supabase
+    .from('prompts')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', promptId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating prompt:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// プロンプトを削除
+export const deletePrompt = async (promptId: string) => {
+  const { error } = await supabase
+    .from('prompts')
+    .delete()
+    .eq('id', promptId);
+
+  if (error) {
+    console.error('Error deleting prompt:', error);
+    return false;
+  }
+
+  return true;
 };
 
 // =============================================
