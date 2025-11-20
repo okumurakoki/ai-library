@@ -46,6 +46,7 @@ import {
   createArticle,
   updateArticle,
   deleteArticle as deleteArticleFromSupabase,
+  fetchPrompts,
   createPrompt,
   updatePrompt,
   deletePrompt as deletePromptFromSupabase,
@@ -175,9 +176,41 @@ const AdminPanel: React.FC = () => {
   const [editArticleDialogOpen, setEditArticleDialogOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [prompts, setPrompts] = useState<Prompt[]>(SAMPLE_PROMPTS);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [promptsLoading, setPromptsLoading] = useState(true);
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+
+  // Supabaseからプロンプトを取得
+  useEffect(() => {
+    const loadPrompts = async () => {
+      setPromptsLoading(true);
+      try {
+        const fetchedPrompts = await fetchPrompts();
+        if (fetchedPrompts && fetchedPrompts.length > 0) {
+          // Supabaseの形式をフロントエンドの形式に変換
+          const promptsData = fetchedPrompts.map((p: any) => ({
+            ...p,
+            useCase: p.use_case,
+            isPremium: p.is_premium,
+            createdAt: p.created_at,
+            updatedAt: p.updated_at,
+          }));
+          setPrompts(promptsData);
+        } else {
+          // Supabaseにプロンプトがない場合はサンプルを使用
+          setPrompts(SAMPLE_PROMPTS);
+        }
+      } catch (error) {
+        console.error('Error loading prompts:', error);
+        setPrompts(SAMPLE_PROMPTS);
+      } finally {
+        setPromptsLoading(false);
+      }
+    };
+
+    loadPrompts();
+  }, []);
 
   // Supabaseから記事を取得
   useEffect(() => {
@@ -233,7 +266,7 @@ const AdminPanel: React.FC = () => {
       }
 
       setPrompts([...createdPrompts, ...prompts]);
-      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました`);
+      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました。\nホーム画面に反映するにはページをリロードしてください。`);
     } catch (error) {
       console.error('Error creating prompts:', error);
       alert('プロンプトの保存に失敗しました');
@@ -702,11 +735,17 @@ const AdminPanel: React.FC = () => {
       {/* プロンプト管理タブ */}
       {selectedTab === 1 && (
         <Box sx={{ px: 2 }}>
-          {/* ヘッダーと新規作成ボタン */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              プロンプト一覧
-            </Typography>
+          {promptsLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              {/* ヘッダーと新規作成ボタン */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  プロンプト一覧
+                </Typography>
             <Button
               variant="contained"
               onClick={() => setGeneratorDialogOpen(true)}
@@ -860,6 +899,8 @@ const AdminPanel: React.FC = () => {
             onClose={() => setGeneratorDialogOpen(false)}
             onGenerate={handleGeneratePrompts}
           />
+            </>
+          )}
         </Box>
       )}
 
