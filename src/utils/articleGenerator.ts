@@ -1,10 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { tavily } from 'tavily';
+import { TavilyClient } from 'tavily';
 import type { Article } from '../types';
 
 // Tavily API クライアント
 const tavilyApiKey = import.meta.env.VITE_TAVILY_API_KEY;
-const tavilyClient = tavilyApiKey ? tavily({ apiKey: tavilyApiKey }) : null;
+const tavilyClient = tavilyApiKey ? new TavilyClient({ apiKey: tavilyApiKey }) : null;
 
 // Anthropic API クライアント
 const anthropicApiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
