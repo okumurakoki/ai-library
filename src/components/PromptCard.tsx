@@ -115,19 +115,43 @@ const PromptCard: React.FC<PromptCardProps> = ({
           gap: 1.5,
         }}
       >
-        {/* カテゴリバッジ */}
-        <Chip
-          label={getCategoryName(prompt.category)}
-          size="small"
-          sx={{
-            backgroundColor: '#000',
-            color: '#fff',
-            borderRadius: 0,
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            alignSelf: 'flex-start',
-          }}
-        />
+        {/* カテゴリバッジとプランタイプバッジ */}
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Chip
+            label={getCategoryName(prompt.category)}
+            size="small"
+            sx={{
+              backgroundColor: '#000',
+              color: '#fff',
+              borderRadius: 0,
+              fontWeight: 600,
+              fontSize: '0.75rem',
+            }}
+          />
+          <Chip
+            label={
+              (() => {
+                const plan = prompt.planType || (prompt.isPremium ? 'premium' : 'free');
+                if (plan === 'free') return '無料';
+                if (plan === 'standard') return 'スタンダード';
+                return 'プレミアム';
+              })()
+            }
+            size="small"
+            sx={{
+              backgroundColor: (() => {
+                const plan = prompt.planType || (prompt.isPremium ? 'premium' : 'free');
+                if (plan === 'free') return '#2e7d32';
+                if (plan === 'standard') return '#1976d2';
+                return '#000';
+              })(),
+              color: '#fff',
+              borderRadius: 0,
+              fontWeight: 600,
+              fontSize: '0.75rem',
+            }}
+          />
+        </Box>
 
         {/* タイトル */}
         <Typography
