@@ -59,6 +59,7 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
   const [usage, setUsage] = useState('');
   const [example, setExample] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [planType, setPlanType] = useState<'free' | 'standard' | 'premium'>('free');
 
   useEffect(() => {
     if (prompt) {
@@ -70,6 +71,7 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       setUsage(prompt.usage || '');
       setExample(prompt.example || '');
       setIsPremium(prompt.isPremium || false);
+      setPlanType(prompt.planType || (prompt.isPremium ? 'premium' : 'free'));
     } else {
       // 新規作成の場合
       setTitle('');
@@ -80,6 +82,7 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       setUsage('');
       setExample('');
       setIsPremium(false);
+      setPlanType('free');
     }
   }, [prompt]);
 
@@ -104,7 +107,7 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
 
   const handleSave = () => {
     const savedPrompt: Prompt = {
-      id: prompt?.id || `prompt-${Date.now()}`,
+      id: prompt?.id || crypto.randomUUID(),
       title,
       content,
       category,
@@ -112,7 +115,8 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       tags,
       usage,
       example,
-      isPremium,
+      isPremium: planType === 'premium',
+      planType,
       createdAt: prompt?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -301,24 +305,24 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
             }}
           />
 
-          {/* プレミアム */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isPremium}
-                onChange={(e) => setIsPremium(e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#000',
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: '#000',
-                  },
-                }}
-              />
-            }
-            label="プレミアムプロンプト"
-          />
+          {/* プランタイプ */}
+          <FormControl fullWidth>
+            <InputLabel>プランタイプ</InputLabel>
+            <Select
+              value={planType}
+              label="プランタイプ"
+              onChange={(e) => {
+                const plan = e.target.value as 'free' | 'standard' | 'premium';
+                setPlanType(plan);
+                setIsPremium(plan === 'premium');
+              }}
+              sx={{ borderRadius: 0 }}
+            >
+              <MenuItem value="free">無料</MenuItem>
+              <MenuItem value="standard">スタンダード</MenuItem>
+              <MenuItem value="premium">プレミアム</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
       </DialogContent>
 

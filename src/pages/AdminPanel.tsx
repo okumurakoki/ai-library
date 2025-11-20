@@ -193,6 +193,7 @@ const AdminPanel: React.FC = () => {
             ...p,
             useCase: p.use_case,
             isPremium: p.is_premium,
+            planType: p.plan_type || (p.is_premium ? 'premium' : 'free'),
             createdAt: p.created_at,
             updatedAt: p.updated_at,
           }));
@@ -250,6 +251,7 @@ const AdminPanel: React.FC = () => {
           usage: prompt.usage,
           example: prompt.example,
           is_premium: prompt.isPremium,
+          plan_type: prompt.planType || (prompt.isPremium ? 'premium' : 'free'),
         });
 
         if (created) {
@@ -258,6 +260,7 @@ const AdminPanel: React.FC = () => {
             ...created,
             useCase: created.use_case,
             isPremium: created.is_premium,
+            planType: created.plan_type,
             createdAt: created.created_at,
             updatedAt: created.updated_at,
           };
@@ -325,6 +328,7 @@ const AdminPanel: React.FC = () => {
           usage: updatedPrompt.usage,
           example: updatedPrompt.example,
           is_premium: updatedPrompt.isPremium,
+          plan_type: updatedPrompt.planType || (updatedPrompt.isPremium ? 'premium' : 'free'),
         });
 
         if (updated) {
@@ -332,6 +336,7 @@ const AdminPanel: React.FC = () => {
             ...updated,
             useCase: updated.use_case,
             isPremium: updated.is_premium,
+            planType: updated.plan_type,
             createdAt: updated.created_at,
             updatedAt: updated.updated_at,
           };
@@ -352,6 +357,7 @@ const AdminPanel: React.FC = () => {
           usage: updatedPrompt.usage,
           example: updatedPrompt.example,
           is_premium: updatedPrompt.isPremium,
+          plan_type: updatedPrompt.planType || (updatedPrompt.isPremium ? 'premium' : 'free'),
         });
 
         if (created) {
@@ -359,6 +365,7 @@ const AdminPanel: React.FC = () => {
             ...created,
             useCase: created.use_case,
             isPremium: created.is_premium,
+            planType: created.plan_type,
             createdAt: created.created_at,
             updatedAt: created.updated_at,
           };

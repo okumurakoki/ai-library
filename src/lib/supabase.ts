@@ -35,8 +35,9 @@ export const createPrompt = async (prompt: {
   usage?: string;
   example?: string;
   is_premium?: boolean;
+  plan_type?: 'free' | 'standard' | 'premium';
 }) => {
-  const { data, error } = await supabase
+  const { data, error} = await supabase
     .from('prompts')
     .insert({
       id: prompt.id,
@@ -48,6 +49,7 @@ export const createPrompt = async (prompt: {
       usage: prompt.usage,
       example: prompt.example,
       is_premium: prompt.is_premium || false,
+      plan_type: prompt.plan_type || 'free',
     })
     .select()
     .single();
@@ -72,6 +74,7 @@ export const updatePrompt = async (
     usage?: string;
     example?: string;
     is_premium?: boolean;
+    plan_type?: 'free' | 'standard' | 'premium';
   }
 ) => {
   const { data, error } = await supabase

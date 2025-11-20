@@ -109,6 +109,7 @@ function App() {
             ...p,
             useCase: p.use_case,
             isPremium: p.is_premium,
+            planType: p.plan_type || (p.is_premium ? 'premium' : 'free'),
             createdAt: p.created_at,
             updatedAt: p.updated_at,
           }));

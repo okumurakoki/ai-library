@@ -82,11 +82,19 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
     onClose();
   };
 
-  const togglePromptPremium = (promptId: string) => {
+  const cyclePromptPlan = (promptId: string) => {
     setGeneratedPrompts(prompts =>
-      prompts.map(p =>
-        p.id === promptId ? { ...p, isPremium: !p.isPremium } : p
-      )
+      prompts.map(p => {
+        if (p.id === promptId) {
+          const currentPlan = p.planType || (p.isPremium ? 'premium' : 'free');
+          let nextPlan: 'free' | 'standard' | 'premium';
+          if (currentPlan === 'free') nextPlan = 'standard';
+          else if (currentPlan === 'standard') nextPlan = 'premium';
+          else nextPlan = 'free';
+          return { ...p, planType: nextPlan, isPremium: nextPlan === 'premium' };
+        }
+        return p;
+      })
     );
   };
 
@@ -108,10 +116,10 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
     }
   };
 
-  const bulkSetPremium = (isPremium: boolean) => {
+  const bulkSetPlan = (planType: 'free' | 'standard' | 'premium') => {
     setGeneratedPrompts(prompts =>
       prompts.map(p =>
-        selectedPrompts.has(p.id) ? { ...p, isPremium } : p
+        selectedPrompts.has(p.id) ? { ...p, planType, isPremium: planType === 'premium' } : p
       )
     );
   };
@@ -259,7 +267,39 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                   <Button
                     size="small"
                     variant="outlined"
-                    onClick={() => bulkSetPremium(true)}
+                    onClick={() => bulkSetPlan('free')}
+                    sx={{
+                      borderColor: '#2e7d32',
+                      color: '#2e7d32',
+                      borderRadius: 0,
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    無料
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => bulkSetPlan('standard')}
+                    sx={{
+                      borderColor: '#1976d2',
+                      color: '#1976d2',
+                      borderRadius: 0,
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    スタンダード
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => bulkSetPlan('premium')}
                     sx={{
                       borderColor: '#000',
                       color: '#000',
@@ -270,23 +310,7 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                       fontSize: '0.75rem',
                     }}
                   >
-                    プレミアムに設定
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => bulkSetPremium(false)}
-                    sx={{
-                      borderColor: '#666',
-                      color: '#666',
-                      borderRadius: 0,
-                      minWidth: 'auto',
-                      px: 1,
-                      py: 0.5,
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    無料に設定
+                    プレミアム
                   </Button>
                 </>
               )}
@@ -354,17 +378,25 @@ const PromptGeneratorDialog: React.FC<PromptGeneratorDialogProps> = ({
                           fontWeight: 600,
                         }}
                       />
-                      <IconButton
+                      <Chip
+                        label={prompt.planType || (prompt.isPremium ? 'premium' : 'free') === 'free' ? '無料' : prompt.planType === 'standard' ? 'スタンダード' : 'プレミアム'}
                         size="small"
-                        onClick={() => togglePromptPremium(prompt.id)}
+                        onClick={() => cyclePromptPlan(prompt.id)}
                         sx={{
-                          p: 0.5,
-                          color: prompt.isPremium ? '#000' : '#ccc',
+                          backgroundColor:
+                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'free' ? '#e8f5e9' :
+                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'standard' ? '#e3f2fd' :
+                            '#000',
+                          color:
+                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'premium' ? '#fff' : '#000',
+                          borderRadius: 0,
+                          fontSize: '0.7rem',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            opacity: 0.8,
+                          },
                         }}
-                        title={prompt.isPremium ? 'プレミアム' : '無料'}
-                      >
-                        {prompt.isPremium ? <StarIcon /> : <StarBorderIcon />}
-                      </IconButton>
+                      />
                     </Box>
                     <Typography
                       variant="body2"

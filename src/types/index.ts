@@ -8,7 +8,8 @@ export interface Prompt {
   tags?: string[]; // 小分類（詳細タグ）
   usage?: string;
   example?: string;
-  isPremium?: boolean;
+  isPremium?: boolean; // 後方互換性のため残す
+  planType?: 'free' | 'standard' | 'premium'; // 新しいプラン形式
   createdAt: string;
   updatedAt: string;
 }
