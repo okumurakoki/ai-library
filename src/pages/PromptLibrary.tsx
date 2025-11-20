@@ -110,6 +110,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [searchHistoryAnchorEl, setSearchHistoryAnchorEl] = useState<null | HTMLElement>(null);
   const [sortBy, setSortBy] = useState<'default' | 'popular' | 'favorite' | 'name'>('default');
+  const [planFilter, setPlanFilter] = useState<'all' | 'free' | 'standard' | 'premium'>('all');
 
   const { recentSearches, popularSearches, recordSearch, deleteSearchHistoryItem, clearSearchHistory } =
     useSearchHistory();
@@ -188,6 +189,14 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
       }
     }
 
+    // プランフィルター
+    if (planFilter !== 'all') {
+      filtered = filtered.filter((p) => {
+        const plan = p.planType || (p.isPremium ? 'premium' : 'free');
+        return plan === planFilter;
+      });
+    }
+
     // 検索フィルター
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -223,7 +232,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
     // default の場合はそのまま（元の順序 = 新着順）
 
     return filtered;
-  }, [prompts, selectedCategory, selectedUseCase, selectedTags, tagSearchMode, searchQuery, sortBy, stats.mostUsedPrompts, favorites]);
+  }, [prompts, selectedCategory, selectedUseCase, selectedTags, tagSearchMode, searchQuery, sortBy, planFilter, stats.mostUsedPrompts, favorites]);
 
   const handleOpenDetail = (prompt: Prompt) => {
     console.log('Opening detail for prompt:', prompt.id, prompt.title);
@@ -470,6 +479,71 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               }}
             />
           ))}
+        </Box>
+      </Box>
+
+      {/* プランで絞り込み */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+          プランで絞り込み
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Chip
+            label="すべて"
+            onClick={() => setPlanFilter('all')}
+            sx={{
+              borderRadius: 0,
+              backgroundColor: planFilter === 'all' ? '#000' : '#fff',
+              color: planFilter === 'all' ? '#fff' : '#000',
+              border: '1px solid #000',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: planFilter === 'all' ? '#333' : '#f5f5f5',
+              },
+            }}
+          />
+          <Chip
+            label="無料"
+            onClick={() => setPlanFilter('free')}
+            sx={{
+              borderRadius: 0,
+              backgroundColor: planFilter === 'free' ? '#2e7d32' : '#fff',
+              color: planFilter === 'free' ? '#fff' : '#2e7d32',
+              border: '1px solid #2e7d32',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: planFilter === 'free' ? '#1b5e20' : '#e8f5e9',
+              },
+            }}
+          />
+          <Chip
+            label="スタンダード"
+            onClick={() => setPlanFilter('standard')}
+            sx={{
+              borderRadius: 0,
+              backgroundColor: planFilter === 'standard' ? '#1976d2' : '#fff',
+              color: planFilter === 'standard' ? '#fff' : '#1976d2',
+              border: '1px solid #1976d2',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: planFilter === 'standard' ? '#1565c0' : '#e3f2fd',
+              },
+            }}
+          />
+          <Chip
+            label="プレミアム"
+            onClick={() => setPlanFilter('premium')}
+            sx={{
+              borderRadius: 0,
+              backgroundColor: planFilter === 'premium' ? '#000' : '#fff',
+              color: planFilter === 'premium' ? '#fff' : '#000',
+              border: '1px solid #000',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: planFilter === 'premium' ? '#333' : '#f5f5f5',
+              },
+            }}
+          />
         </Box>
       </Box>
 
