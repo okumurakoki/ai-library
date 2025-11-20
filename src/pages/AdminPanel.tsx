@@ -837,10 +837,17 @@ const AdminPanel: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={prompt.isPremium ? 'プレミアム' : '無料'}
+                        label={
+                          (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'free' ? '無料' :
+                          (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'standard' ? 'スタンダード' :
+                          'プレミアム'
+                        }
                         size="small"
                         sx={{
-                          backgroundColor: prompt.isPremium ? '#000' : '#999',
+                          backgroundColor:
+                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'free' ? '#2e7d32' :
+                            (prompt.planType || (prompt.isPremium ? 'premium' : 'free')) === 'standard' ? '#1976d2' :
+                            '#000',
                           color: '#fff',
                           borderRadius: 0,
                           fontSize: '0.75rem',

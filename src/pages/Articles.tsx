@@ -145,7 +145,14 @@ const Articles: React.FC = () => {
       try {
         const fetchedArticles = await fetchArticles();
         if (fetchedArticles && fetchedArticles.length > 0) {
-          setArticles(fetchedArticles);
+          // Supabaseの形式をフロントエンドの形式に変換
+          const articlesData = fetchedArticles.map((a: any) => ({
+            ...a,
+            isPublished: a.is_published,
+            publishedAt: a.published_at,
+            thumbnailUrl: a.thumbnail_url,
+          }));
+          setArticles(articlesData);
         } else {
           // Supabaseに記事がない場合はサンプル記事を使用
           setArticles(SAMPLE_ARTICLES);
