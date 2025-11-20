@@ -283,10 +283,10 @@ const AdminPanel: React.FC = () => {
       }
 
       setPrompts([...createdPrompts, ...prompts]);
-      showSuccess(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました。ホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。`);
+      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました。\n\nホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。`);
     } catch (error) {
       console.error('Error creating prompts:', error);
-      showError('プロンプトの保存に失敗しました');
+      alert('プロンプトの保存に失敗しました');
     }
   };
 
@@ -314,11 +314,11 @@ const AdminPanel: React.FC = () => {
           thumbnailUrl: created.thumbnail_url,
         };
         setArticles([articleForDisplay, ...articles]);
-        showSuccess('記事をSupabaseに保存しました');
+        alert('記事をSupabaseに保存しました');
       }
     } catch (error) {
       console.error('Error creating article:', error);
-      showError('記事の保存に失敗しました');
+      alert('記事の保存に失敗しました');
     }
   };
 
@@ -357,7 +357,7 @@ const AdminPanel: React.FC = () => {
           const newPrompts = [...prompts];
           newPrompts[existingIndex] = promptForDisplay;
           setPrompts(newPrompts);
-          showSuccess('プロンプトを更新しました。ホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。');
+          alert('プロンプトを更新しました。\n\nホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。');
         }
       } else {
         // 新規作成
@@ -384,12 +384,12 @@ const AdminPanel: React.FC = () => {
             updatedAt: created.updated_at,
           };
           setPrompts([promptForDisplay, ...prompts]);
-          showSuccess('プロンプトを作成しました');
+          alert('プロンプトを作成しました');
         }
       }
     } catch (error) {
       console.error('Error saving prompt:', error);
-      showError('プロンプトの保存に失敗しました');
+      alert('プロンプトの保存に失敗しました');
     }
   };
 
@@ -398,11 +398,11 @@ const AdminPanel: React.FC = () => {
       const success = await deletePromptFromSupabase(promptId);
       if (success) {
         setPrompts(prompts.filter((p) => p.id !== promptId));
-        showSuccess('プロンプトを削除しました');
+        alert('プロンプトを削除しました');
       }
     } catch (error) {
       console.error('Error deleting prompt:', error);
-      showError('プロンプトの削除に失敗しました');
+      alert('プロンプトの削除に失敗しました');
     }
   };
 
@@ -431,7 +431,7 @@ const AdminPanel: React.FC = () => {
       }
     } catch (error) {
       console.error('Error toggling article publish status:', error);
-      showError('公開状態の変更に失敗しました');
+      alert('公開状態の変更に失敗しました');
     }
   };
 
@@ -440,11 +440,11 @@ const AdminPanel: React.FC = () => {
       const success = await deleteArticleFromSupabase(articleId);
       if (success) {
         setArticles(articles.filter((a) => a.id !== articleId));
-        showSuccess('記事を削除しました');
+        alert('記事を削除しました');
       }
     } catch (error) {
       console.error('Error deleting article:', error);
-      showError('記事の削除に失敗しました');
+      alert('記事の削除に失敗しました');
     }
   };
 
@@ -481,7 +481,7 @@ const AdminPanel: React.FC = () => {
           const newArticles = [...articles];
           newArticles[existingIndex] = articleForDisplay;
           setArticles(newArticles);
-          showSuccess('記事を更新しました');
+          alert('記事を更新しました');
         }
       } else {
         // 新規作成
@@ -506,12 +506,12 @@ const AdminPanel: React.FC = () => {
             thumbnailUrl: created.thumbnail_url,
           };
           setArticles([articleForDisplay, ...articles]);
-          showSuccess('記事を作成しました');
+          alert('記事を作成しました');
         }
       }
     } catch (error) {
       console.error('Error saving article:', error);
-      showError('記事の保存に失敗しました');
+      alert('記事の保存に失敗しました');
     }
   };
 
@@ -1203,9 +1203,6 @@ const AdminPanel: React.FC = () => {
         onSave={handleSaveArticle}
         onDelete={handleDeleteArticle}
       />
-
-      {/* Toast通知 */}
-      <Toast toast={toast} onClose={hideToast} />
     </Box>
   );
 };

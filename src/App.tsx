@@ -20,6 +20,7 @@ import { useFolders } from './hooks/useFolders';
 import { usePromptHistory } from './hooks/usePromptHistory';
 import { getUserPermissions } from './utils/userPermissions';
 import { fetchPrompts } from './lib/supabase';
+import { convertPromptFromSupabase } from './utils/dataConverter';
 import type { FavoriteFolder, Prompt } from './types';
 
 // Material-UIテーマのカスタマイズ
@@ -105,14 +106,7 @@ function App() {
         const fetchedPrompts = await fetchPrompts();
         if (fetchedPrompts && fetchedPrompts.length > 0) {
           // Supabaseの形式をフロントエンドの形式に変換
-          const prompts = fetchedPrompts.map((p: any) => ({
-            ...p,
-            useCase: p.use_case,
-            isPremium: p.is_premium,
-            planType: p.plan_type || (p.is_premium ? 'premium' : 'free'),
-            createdAt: p.created_at,
-            updatedAt: p.updated_at,
-          }));
+          const prompts = fetchedPrompts.map(convertPromptFromSupabase);
           setAllPrompts(prompts);
         } else {
           // Supabaseにプロンプトがない場合はサンプルを使用
@@ -197,15 +191,9 @@ function App() {
 
     // お気に入りページ
     if (selectedPage === 'favorites') {
-      console.log('Favorites page - favorites array:', favorites);
-      console.log('Favorites page - allPrompts count:', allPrompts.length);
-      console.log('Favorites page - customPrompts count:', customPrompts.length);
-      console.log('Favorites page - allPrompts IDs:', allPrompts.map(p => p.id));
-      console.log('Favorites page - customPrompts IDs:', customPrompts.map(p => p.id));
       // お気に入りはallPromptsとcustomPromptsの両方から探す
       const combinedPrompts = [...allPrompts, ...customPrompts];
       prompts = combinedPrompts.filter((p) => favorites.includes(p.id));
-      console.log('Favorites page - filtered prompts:', prompts.length, prompts.map(p => ({ id: p.id, title: p.title })));
     }
     // 作成したプロンプトページ
     else if (selectedPage === 'custom') {

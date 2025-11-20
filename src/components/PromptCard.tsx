@@ -286,10 +286,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => {
-                    console.log('Detail button clicked (grid):', prompt.id, prompt.title);
-                    onOpenDetail(prompt);
-                  }}
+                  onClick={() => onOpenDetail(prompt)}
                   sx={{
                     borderRadius: 0,
                     backgroundColor: '#000',
@@ -454,10 +451,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => {
-                  console.log('Detail button clicked (list):', prompt.id, prompt.title);
-                  onOpenDetail(prompt);
-                }}
+                onClick={() => onOpenDetail(prompt)}
                 sx={{
                   borderRadius: 0,
                   backgroundColor: '#000',
