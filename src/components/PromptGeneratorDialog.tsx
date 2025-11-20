@@ -22,8 +22,6 @@ import {
   Add as AddIcon,
   CheckBox as CheckBoxIcon,
   CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
-  Star as StarIcon,
-  StarBorder as StarBorderIcon,
 } from '@mui/icons-material';
 import { CATEGORIES } from '../data/categories';
 import type { Prompt } from '../types';

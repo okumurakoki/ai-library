@@ -14,8 +14,6 @@ import {
   InputLabel,
   Chip,
   IconButton,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -58,7 +56,6 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [usage, setUsage] = useState('');
   const [example, setExample] = useState('');
-  const [isPremium, setIsPremium] = useState(false);
   const [planType, setPlanType] = useState<'free' | 'standard' | 'premium'>('free');
 
   useEffect(() => {
@@ -70,7 +67,6 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       setTags(prompt.tags || []);
       setUsage(prompt.usage || '');
       setExample(prompt.example || '');
-      setIsPremium(prompt.isPremium || false);
       setPlanType(prompt.planType || (prompt.isPremium ? 'premium' : 'free'));
     } else {
       // 新規作成の場合
@@ -81,7 +77,6 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
       setTags([]);
       setUsage('');
       setExample('');
-      setIsPremium(false);
       setPlanType('free');
     }
   }, [prompt]);
@@ -314,7 +309,6 @@ const PromptEditDialog: React.FC<PromptEditDialogProps> = ({
               onChange={(e) => {
                 const plan = e.target.value as 'free' | 'standard' | 'premium';
                 setPlanType(plan);
-                setIsPremium(plan === 'premium');
               }}
               sx={{ borderRadius: 0 }}
             >
