@@ -181,14 +181,15 @@ function App() {
   // お気に入りカテゴリごとの件数を計算
   const favoriteCategoryCounts = useMemo(() => {
     const counts: { [key: string]: number } = {};
+    const combinedPrompts = [...allPrompts, ...customPrompts];
     favorites.forEach((favId) => {
-      const prompt = allPrompts.find((p) => p.id === favId);
+      const prompt = combinedPrompts.find((p) => p.id === favId);
       if (prompt) {
         counts[prompt.category] = (counts[prompt.category] || 0) + 1;
       }
     });
     return counts;
-  }, [favorites, allPrompts]);
+  }, [favorites, allPrompts, customPrompts]);
 
   // 表示するプロンプトをフィルタリング
   const displayPrompts = useMemo(() => {
@@ -198,8 +199,12 @@ function App() {
     if (selectedPage === 'favorites') {
       console.log('Favorites page - favorites array:', favorites);
       console.log('Favorites page - allPrompts count:', allPrompts.length);
+      console.log('Favorites page - customPrompts count:', customPrompts.length);
       console.log('Favorites page - allPrompts IDs:', allPrompts.map(p => p.id));
-      prompts = allPrompts.filter((p) => favorites.includes(p.id));
+      console.log('Favorites page - customPrompts IDs:', customPrompts.map(p => p.id));
+      // お気に入りはallPromptsとcustomPromptsの両方から探す
+      const combinedPrompts = [...allPrompts, ...customPrompts];
+      prompts = combinedPrompts.filter((p) => favorites.includes(p.id));
       console.log('Favorites page - filtered prompts:', prompts.length, prompts.map(p => ({ id: p.id, title: p.title })));
     }
     // 作成したプロンプトページ
@@ -210,7 +215,9 @@ function App() {
     else if (selectedFolder) {
       const folder = favoriteFolders.find((f) => f.id === selectedFolder);
       if (folder && Array.isArray(folder.promptIds)) {
-        prompts = allPrompts.filter((p) => folder.promptIds.includes(p.id));
+        // フォルダもallPromptsとcustomPromptsの両方から探す
+        const combinedPrompts = [...allPrompts, ...customPrompts];
+        prompts = combinedPrompts.filter((p) => folder.promptIds.includes(p.id));
       }
     }
     // ホームページ: カスタムプロンプト以外を表示（Supabaseからのプロンプトを含む）
