@@ -24,8 +24,6 @@ import {
   TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   XAxis,
@@ -35,7 +33,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import type { KPIStats, UserActivity, Article, Prompt } from '../types';
+import type { KPIStats, Article, Prompt } from '../types';
 import { SAMPLE_PROMPTS } from '../data/prompts';
 import { getCategoryName } from '../data/categories';
 import PromptGeneratorDialog from '../components/PromptGeneratorDialog';
