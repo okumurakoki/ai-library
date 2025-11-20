@@ -269,7 +269,7 @@ const AdminPanel: React.FC = () => {
       }
 
       setPrompts([...createdPrompts, ...prompts]);
-      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました。\nホーム画面に反映するにはページをリロードしてください。`);
+      alert(`${createdPrompts.length}件のプロンプトをSupabaseに保存しました。\n\nホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。`);
     } catch (error) {
       console.error('Error creating prompts:', error);
       alert('プロンプトの保存に失敗しました');
@@ -343,7 +343,7 @@ const AdminPanel: React.FC = () => {
           const newPrompts = [...prompts];
           newPrompts[existingIndex] = promptForDisplay;
           setPrompts(newPrompts);
-          alert('プロンプトを更新しました');
+          alert('プロンプトを更新しました。\n\nホーム画面に反映するには、ホームに移動してページをリロード（F5またはCmd+R）してください。');
         }
       } else {
         // 新規作成
@@ -1101,47 +1101,48 @@ const AdminPanel: React.FC = () => {
             </Table>
           </TableContainer>
 
-          {/* プロンプト生成ダイアログ */}
-          <PromptGeneratorDialog
-            open={generatorDialogOpen}
-            onClose={() => setGeneratorDialogOpen(false)}
-            onGenerate={handleGeneratePrompts}
-          />
-
-          {/* プロンプト編集ダイアログ */}
-          <PromptEditDialog
-            open={editPromptDialogOpen}
-            prompt={selectedPrompt}
-            onClose={() => {
-              setEditPromptDialogOpen(false);
-              setSelectedPrompt(null);
-            }}
-            onSave={handleSavePrompt}
-            onDelete={handleDeletePrompt}
-          />
-
-          {/* 記事生成ダイアログ */}
-          <ArticleGeneratorDialog
-            open={articleGeneratorDialogOpen}
-            onClose={() => setArticleGeneratorDialogOpen(false)}
-            onGenerate={handleGenerateArticle}
-          />
-
-          {/* 記事編集ダイアログ */}
-          <ArticleEditDialog
-            open={editArticleDialogOpen}
-            article={selectedArticle}
-            onClose={() => {
-              setEditArticleDialogOpen(false);
-              setSelectedArticle(null);
-            }}
-            onSave={handleSaveArticle}
-            onDelete={handleDeleteArticle}
-          />
             </>
           )}
         </Box>
       )}
+
+      {/* プロンプト生成ダイアログ */}
+      <PromptGeneratorDialog
+        open={generatorDialogOpen}
+        onClose={() => setGeneratorDialogOpen(false)}
+        onGenerate={handleGeneratePrompts}
+      />
+
+      {/* プロンプト編集ダイアログ */}
+      <PromptEditDialog
+        open={editPromptDialogOpen}
+        prompt={selectedPrompt}
+        onClose={() => {
+          setEditPromptDialogOpen(false);
+          setSelectedPrompt(null);
+        }}
+        onSave={handleSavePrompt}
+        onDelete={handleDeletePrompt}
+      />
+
+      {/* 記事生成ダイアログ */}
+      <ArticleGeneratorDialog
+        open={articleGeneratorDialogOpen}
+        onClose={() => setArticleGeneratorDialogOpen(false)}
+        onGenerate={handleGenerateArticle}
+      />
+
+      {/* 記事編集ダイアログ */}
+      <ArticleEditDialog
+        open={editArticleDialogOpen}
+        article={selectedArticle}
+        onClose={() => {
+          setEditArticleDialogOpen(false);
+          setSelectedArticle(null);
+        }}
+        onSave={handleSaveArticle}
+        onDelete={handleDeleteArticle}
+      />
     </Box>
   );
 };
