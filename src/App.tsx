@@ -97,12 +97,10 @@ function App() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([...SAMPLE_PROMPTS]);
-  const [promptsLoading, setPromptsLoading] = useState(true);
 
   // Supabaseからプロンプトを取得
   useEffect(() => {
     const loadPrompts = async () => {
-      setPromptsLoading(true);
       try {
         const fetchedPrompts = await fetchPrompts();
         if (fetchedPrompts && fetchedPrompts.length > 0) {
@@ -122,8 +120,6 @@ function App() {
       } catch (error) {
         console.error('Error loading prompts:', error);
         setAllPrompts(SAMPLE_PROMPTS);
-      } finally {
-        setPromptsLoading(false);
       }
     };
 
