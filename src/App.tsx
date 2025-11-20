@@ -163,9 +163,18 @@ function App() {
   const userPlan = (user?.publicMetadata?.plan as 'free' | 'premium') || 'free';
   const isAdmin = permissions.isAdmin;
 
-  // カスタムプロンプトとサンプルプロンプトを統合
-  useMemo(() => {
-    setAllPrompts([...SAMPLE_PROMPTS, ...customPrompts]);
+  // カスタムプロンプトをallPromptsに追加（Supabaseのプロンプトを上書きしないように）
+  useEffect(() => {
+    if (customPrompts.length > 0) {
+      setAllPrompts(prev => {
+        // カスタムプロンプトのIDセット
+        const customIds = new Set(customPrompts.map(p => p.id));
+        // 既存のプロンプトからカスタムプロンプトを除外
+        const withoutCustom = prev.filter(p => !customIds.has(p.id));
+        // カスタムプロンプトを追加
+        return [...withoutCustom, ...customPrompts];
+      });
+    }
   }, [customPrompts]);
 
   // お気に入りカテゴリごとの件数を計算
@@ -199,9 +208,12 @@ function App() {
         prompts = allPrompts.filter((p) => folder.promptIds.includes(p.id));
       }
     }
-    // ホームページ: サンプルプロンプトのみ（カスタムプロンプトを除外）
+    // ホームページ: カスタムプロンプト以外を表示（Supabaseからのプロンプトを含む）
     else if (selectedPage === 'home') {
-      prompts = SAMPLE_PROMPTS;
+      // カスタムプロンプトのIDを取得
+      const customPromptIds = new Set(customPrompts.map(p => p.id));
+      // カスタムプロンプト以外のプロンプトを表示
+      prompts = allPrompts.filter(p => !customPromptIds.has(p.id));
     } else {
       prompts = allPrompts;
     }
